@@ -1,0 +1,7 @@
+/out
+/target
+/.idea
+*.iml
+*.png
+*.docx
+/test
