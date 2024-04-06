@@ -5,3 +5,7 @@
 *.png
 *.docx
 /test
+*.jar
+*.zip
+/logs
+*.json
