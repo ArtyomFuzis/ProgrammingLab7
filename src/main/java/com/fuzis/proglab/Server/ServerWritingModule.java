@@ -26,7 +26,6 @@ public class ServerWritingModule {
         executorService.submit(run);
     }
     public void inner_write(AppData.TransferData req) {
-        System.out.println("Writing " + req);
         try {
             var ostr = new ByteArrayOutputStream(1000);
             var os = new ObjectOutputStream(ostr);

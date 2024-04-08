@@ -7,14 +7,10 @@
 package com.fuzis.proglab.Server;
 
 import com.fuzis.proglab.AppData;
-import com.fuzis.proglab.Client.ClientConnectionModule;
 import com.fuzis.proglab.InteractiveInput;
 import com.fuzis.proglab.Server.Collection.CharacterCollectionFile;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 public class ServerMain {
     public static final Logger logger = LoggerFactory.getLogger(ServerMain.class);
@@ -67,9 +63,11 @@ public class ServerMain {
             });
             Thread thr = new Thread(task);
             thr.start();
-            exec.start_interactive(in_scan);
+            exec.start_server(in_scan);
         };
         Thread thr = new Thread(task);
         thr.start();
+        ServerExecutionModule main_exec = new ServerExecutionModule(null);
+        main_exec.start_console();
     }
 }

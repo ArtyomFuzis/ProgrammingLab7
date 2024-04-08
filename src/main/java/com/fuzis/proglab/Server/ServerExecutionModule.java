@@ -11,7 +11,6 @@ import com.fuzis.proglab.DefaultCartoonPersonCharacter;
 import com.fuzis.proglab.InteractiveInput;
 import com.fuzis.proglab.Server.Collection.CharacterCollection;
 import com.fuzis.proglab.Server.Collection.CharacterCollectionFile;
-import com.fuzis.proglab.Server.Collection.CharacterCollectionSQL;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -26,17 +25,17 @@ public class ServerExecutionModule {
 
     public void warn(String info) {
         logger.warn(info);
-        buffer.append("[ServerWARN] ").append(info).append("\n");
+        if(output_mode) buffer.append("[ServerWARN] ").append(info).append("\n");
     }
 
     public void feedback(String info) {
         logger.info(info);
-        buffer.append("[ServerINFO] ").append(info).append("\n");
+        if(output_mode) buffer.append("[ServerINFO] ").append(info).append("\n");
     }
 
     public void error(String info) {
         logger.error(info);
-        buffer.append("[ServerERROR] ").append(info).append("\n");
+        if(output_mode) buffer.append("[ServerERROR] ").append(info).append("\n");
     }
 
     record ScriptData(InteractiveInput.FakeScanner file, String prev_key) {
@@ -45,13 +44,14 @@ public class ServerExecutionModule {
     public HashMap<String, ScriptData> executing_scripts = new HashMap<>();
     public String cur_script = null;
     public CharacterCollection char_col;
-    public static Boolean exit = false;
     public Boolean supress_inp_invite = false;
     public InteractiveInput.FakeScanner scan;
     public InteractiveInput.FakeScanner in_scan;
     public ServerWritingModule write_module;
     public ServerReadingModule read_module;
     public ServerConnectionModule _con;
+    public Queue<String> history = new LinkedList<>();
+    boolean output_mode;
 
     public void println_supress(Object a) {
         if (supress_inp_invite) return;
@@ -66,15 +66,17 @@ public class ServerExecutionModule {
     StringBuilder buffer = new StringBuilder();
 
     public void print(Object a) {
-        logger.trace("Added to response: " + a.toString());
-        buffer.append(a.toString());
-        //System.out.print(a);
+        if (output_mode) {
+            logger.trace("Added to response: " + a.toString());
+            buffer.append(a.toString());
+        } else System.out.print(a);
     }
 
     public void println(Object a) {
-        logger.trace("Added to response: " + a.toString());
-        buffer.append(a.toString()).append("\n");
-        //System.out.println(a);
+        if (output_mode) {
+            logger.trace("Added to response: " + a.toString());
+            buffer.append(a.toString()).append("\n");
+        } else System.out.println(a);
     }
 
     public void println() {
@@ -220,10 +222,10 @@ public class ServerExecutionModule {
         }
 
         @HiddenCommand
-        @InteractiveCommand(args = {0}, usage = {"exit_server - завершить работу интерактивного режима"}, help = "Осуществляет выход из программы/подпрограммы")
-        public void exit_server(List<String> argc) {
-            exit = true;
-            feedback("Exiting...");
+        @InteractiveCommand(args = {0}, usage = {"exit - завершить работу интерактивного режима"}, help = "Осуществляет выход из программы/подпрограммы")
+        public void exit(List<String> argc) {
+            feedback("Shutting down...");
+            System.exit(0);
         }
 
         @InteractiveCommand(args = {0}, usage = {"clear - полная очистка коллекции"}, help = "Осуществляет очистку коллекции")
@@ -405,23 +407,25 @@ public class ServerExecutionModule {
             }
         }
     }
-    public ServerExecutionModule(ServerConnectionModule con)
-    {
+
+    public ServerExecutionModule(ServerConnectionModule con) {
         _con = con;
         write_module = new ServerWritingModule(con);
         read_module = new ServerReadingModule(con);
     }
-    public void start_interactive(InteractiveInput.FakeScanner _in_scan) {
+
+    public void start_server(InteractiveInput.FakeScanner _in_scan) {
+        output_mode = true;
         in_scan = _in_scan;
         //exit = false;
         char_col = CharacterCollectionFile.getInstance();
         Cmds cmd_class = new Cmds();
-        ServerConnectionModule.feedback("Interactive mode server started");
+        ServerConnectionModule.feedback("Client interactive mode server started");
         supress_inp_invite = false;
         while (scan == null || !scan.equals(in_scan)) {
             if (scan != null) send();
             scan = in_scan;
-            while (!exit && scan.hasNext()) {
+            while (scan.hasNext()) {
                 String pre = scan.nextLine().trim();
                 if (pre.trim().isEmpty()) continue;
                 String[] cmd = pre.split("\\s+");
@@ -445,7 +449,7 @@ public class ServerExecutionModule {
                     error("Command execution error");
                 }
                 if (scan.equals(in_scan)) send();
-                while (!scan.hasNext() && !exit) {
+                while (!scan.hasNext()) {
                     var prev = executing_scripts.get(cur_script).prev_key;
                     if (prev != null) {
                         scan = executing_scripts.get(prev).file;
@@ -462,5 +466,61 @@ public class ServerExecutionModule {
             }
         }
         ServerConnectionModule.feedback("Interactive mode exit");
+    }
+
+    public  void start_console() {
+        output_mode = false;
+        char_col = CharacterCollectionFile.getInstance();
+        Cmds cmd_class = new Cmds();
+        feedback("Interactive mode started");
+        var in_scan = new InteractiveInput.FakeScanner(new Scanner(System.in));
+        supress_inp_invite = false;
+        while (scan == null || !scan.equals(in_scan)) {
+            scan = in_scan;
+            while (scan.hasNext()) {
+                String pre = scan.nextLine().trim();
+                if (pre.trim().isEmpty()) continue;
+                String[] cmd = pre.split("\\s+");
+                try {
+                    var cmd_func = Cmds.class.getMethod(cmd[0], List.class);
+                    var args_size = cmd_func.getAnnotation(InteractiveCommand.class).args();
+                    if (Arrays.stream(args_size).noneMatch(x -> x == cmd.length - 1)) {
+                        error("Wrong count of arguments");
+                        var arg = new ArrayList<String>();
+                        arg.add(cmd[0]);
+                        cmd_class.help(arg);
+                        continue;
+                    }
+                    if (cmd.length == 1) cmd_func.invoke(cmd_class, new ArrayList<String>());
+                    else {
+                        cmd_func.invoke(cmd_class, Arrays.stream(Arrays.copyOfRange(cmd, 1, cmd.length)).toList());
+                    }
+                    history.add(pre);
+                    if (history.size() > 14) {
+                        history.poll();
+                    }
+                } catch (NoSuchMethodException ex) {
+                    error("No such command");
+                } catch (InvocationTargetException | IllegalAccessException e) {
+                    error("Command execution error");
+                }
+                while(!scan.hasNext())
+                {
+                    var prev =  executing_scripts.get(cur_script).prev_key;
+                    if(prev != null) {
+                        scan = executing_scripts.get(prev).file;
+                        executing_scripts.remove(cur_script);
+                        cur_script = prev;
+                    }
+                    else
+                    {
+                        executing_scripts.remove(cur_script);
+                        cur_script = null;
+                        feedback("End script execution");
+                        break;
+                    }
+                }
+            }
+        }
     }
 }

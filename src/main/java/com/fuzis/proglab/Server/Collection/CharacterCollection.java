@@ -2,7 +2,6 @@ package com.fuzis.proglab.Server.Collection;
 
 import com.fuzis.proglab.DefaultCartoonPersonCharacter;
 import com.fuzis.proglab.Exception.DataBaseConnectionFailedException;
-import com.fuzis.proglab.Server.ServerExecutionModule;
 
 import java.util.Date;
 import java.util.HashMap;
