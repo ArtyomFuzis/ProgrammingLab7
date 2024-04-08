@@ -9,3 +9,4 @@
 *.zip
 /logs
 *.json
+db.properties

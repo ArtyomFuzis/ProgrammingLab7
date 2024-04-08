@@ -66,8 +66,8 @@ public class InteractiveInput {
     FakeScanner scan;
     Consumer<Object> println_supress;
     Consumer<Object> print_supress;
-    Method writing_method;
-    Method reading_method;
+    Object writing_obj;
+    Object reading_obj;
     boolean mode;
     public InteractiveInput(FakeScanner scan, Consumer<Object> println_supress, Consumer<Object> print_supress)
     {
@@ -76,24 +76,18 @@ public class InteractiveInput {
         this.scan=scan;
         this.mode = false;
     }
-    public InteractiveInput(Class writing_cls,Class reading_cls)
+    public InteractiveInput(Object _writing_obj,Object _reading_obj)
     {
-        try {
-            writing_method = writing_cls.getMethod("write", AppData.TransferData.class);
-            reading_method = reading_cls.getMethod("read");
-            mode=true;
-        }
-        catch (NoSuchMethodException ex)
-        {
-            System.out.println("ProgrammerBigMistakeException: " + ex.getLocalizedMessage());
-        }
+        writing_obj = _writing_obj;
+        reading_obj = _reading_obj;
+        mode=true;
     }
     public void write(AppData.TransferData data)
     {
         try {
-            writing_method.invoke(null, data);
+            writing_obj.getClass().getMethod("write", AppData.TransferData.class).invoke(writing_obj,data);
         }
-        catch (IllegalAccessException | InvocationTargetException ex)
+        catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException ex)
         {
             System.out.println("Something went wrong,programmer mistake.... " + ex.getLocalizedMessage());
         }
@@ -101,9 +95,9 @@ public class InteractiveInput {
     public AppData.TransferData read()
     {
         try {
-            return (AppData.TransferData)reading_method.invoke(null,null);
+            return (AppData.TransferData)reading_obj.getClass().getMethod("read").invoke(reading_obj,null);
         }
-        catch (IllegalAccessException | InvocationTargetException ex)
+        catch (IllegalAccessException | InvocationTargetException |NoSuchMethodException ex)
         {
             System.out.println("Something went wrong,programmer mistake.... " + ex.getLocalizedMessage());
             return null;

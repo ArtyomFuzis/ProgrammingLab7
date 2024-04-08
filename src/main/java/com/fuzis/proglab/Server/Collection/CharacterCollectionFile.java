@@ -1,8 +1,10 @@
-package com.fuzis.proglab.Server;
+package com.fuzis.proglab.Server.Collection;
 import com.fuzis.proglab.Enums.Opinion;
 import com.fuzis.proglab.Enums.Popularity;
 import com.fuzis.proglab.Enums.Sex;
 import com.fuzis.proglab.DefaultCartoonPersonCharacter;
+import com.fuzis.proglab.Server.ServerExecutionModule;
+import com.fuzis.proglab.Server.ServerMain;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
@@ -16,8 +18,9 @@ import java.util.*;
  * <br>
  * <img width="700" height="400" src="https://img.goodfon.ru/original/1920x1080/d/bd/devushki-maple-coconut-azuki-neko-para-vanilla-cinnamon-art.jpg">
  */
-public class CharacterCollection
+public class CharacterCollectionFile extends CharacterCollection
 {
+
     /**
      * Служебный метод на тот случай если <s>у кого-то сгорит</s> потребуется много раз переводить что-то из неизвестности (нас самом деле являющейся Long) в Integer
      * Очень не рекомендуется применять на что-то кроме enum, автор сам понятие не имеет какой там except ^___^
@@ -32,7 +35,7 @@ public class CharacterCollection
 
     public static String fileName = "character.json";
 
-    private static CharacterCollection _instance;
+    private static CharacterCollectionFile _instance;
 
     /**
      * Выдает объект класса, если он ранее не запрашивался, то создает его с конструктором по умолчанию
@@ -40,10 +43,9 @@ public class CharacterCollection
      */
     public static CharacterCollection getInstance()
     {
-        if(_instance == null)_instance = new CharacterCollection();
-        return _instance;
+        return getInstance(CharacterCollectionFile.class);
     }
-    private final HashMap<String, DefaultCartoonPersonCharacter> characters;
+    private HashMap<String, DefaultCartoonPersonCharacter> characters;
 
     /**
      * Возврат нашей коллекции в её виде <code>{@literal HashMap<String, DefaultCartoonPersonCharacter>}</code>
@@ -77,6 +79,7 @@ public class CharacterCollection
      */
     public void load()
     {
+        this.characters = new HashMap<>();
         Scanner scan=null;
         try {
             File f = new File(fileName);
@@ -109,9 +112,9 @@ public class CharacterCollection
             }
 
         } catch (FileNotFoundException e) {
-            ServerExecutionModule.warn("Data file not found or IO error");
+            ServerMain.warn("Data file not found or IO error");
         } catch ( ParseException  | ClassCastException | NullPointerException e ) {
-            ServerExecutionModule.error("Data file parse error");
+            ServerMain.error("Data file parse error");
         }
         finally {
             if(scan != null)scan.close();
@@ -130,17 +133,6 @@ public class CharacterCollection
      * @param id идентификатор персонажа для удаления
      */
     public DefaultCartoonPersonCharacter deleteCharacter(String id){return characters.remove(id);}
-    private final Date init_date;
-
-    /**
-     * Инициализирует <s>банку</s> коллекцию с персонажами и пытается считать данные из указанного в fileName json-файла, а так же устанавливает дату инициализации (для getInfo)
-     */
-    public CharacterCollection()
-    {
-        this.characters = new HashMap<>();
-        init_date = new Date();
-        load();
-    }
 
     /**
      * <s color="red">БЕЗВОЗВРАТНО УНИЧТОЖИТЬ КОТИКОВ</s> Очистить коллекцию (нужно старое разрушить, чтобы построить новое)
@@ -224,11 +216,9 @@ public class CharacterCollection
         }
         catch (IOException ex)
         {
-            ServerExecutionModule.error("IO write error");
+            ServerMain.error("IO write error");
             return;
         }
-
-
-        ServerExecutionModule.feedback("Successful saving");
+        ServerMain.feedback("Successful saving");
     }
 }
