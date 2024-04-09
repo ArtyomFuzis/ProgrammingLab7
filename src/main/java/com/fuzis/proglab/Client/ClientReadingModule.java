@@ -43,7 +43,7 @@ public class ClientReadingModule {
         try {
             ArrayList<ByteBuffer> arr = new ArrayList<>();
             int whole_length = 0;
-            Thread.sleep(150);
+            Thread.sleep(100);
             while (true) {
                 ByteBuffer code_b = ByteBuffer.allocate(1);
                 ClientConnectionModule.socket.read(code_b);

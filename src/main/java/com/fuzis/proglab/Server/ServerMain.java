@@ -8,6 +8,7 @@ package com.fuzis.proglab.Server;
 
 import com.fuzis.proglab.AppData;
 import com.fuzis.proglab.InteractiveInput;
+import com.fuzis.proglab.Server.Collection.CharacterCollection;
 import com.fuzis.proglab.Server.Collection.CharacterCollectionFile;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -38,7 +39,7 @@ public class ServerMain {
             error("Port not found, redirect to 4352");
             AppData.PORT = 4352;
         }
-        Runtime.getRuntime().addShutdownHook(new Thread(() -> CharacterCollectionFile.getInstance().save(), "Shutdown"));
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> CharacterCollectionFile.getInstance().save(new CharacterCollection.AuthData("admin","",1)), "Shutdown"));
 
         boolean listening_exit = false;
 

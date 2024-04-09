@@ -59,7 +59,7 @@ public class CharacterCollectionFile extends CharacterCollection
      * Добавить персонажа в семью (коллекцию), в качестве идентификатора использует имя персонажа
      * @param charac персонаж, которого надо добавить
      */
-    public void add(DefaultCartoonPersonCharacter charac)
+    public void add(DefaultCartoonPersonCharacter charac,AuthData authData)
     {
         characters.put(charac.getName(),charac);
     }
@@ -69,7 +69,7 @@ public class CharacterCollectionFile extends CharacterCollection
      * @param id идентификатор для хранения нового персонажа в коллекции
      * @param charac персонаж, которого надо добавить
      */
-    public void add(String id, DefaultCartoonPersonCharacter charac)
+    public void add(String id, DefaultCartoonPersonCharacter charac,AuthData authData)
     {
         characters.put(id,charac);
     }
@@ -132,12 +132,12 @@ public class CharacterCollectionFile extends CharacterCollection
      * Удалить персонажа с определенным id, если не найден - ничего не делает
      * @param id идентификатор персонажа для удаления
      */
-    public DefaultCartoonPersonCharacter deleteCharacter(String id){return characters.remove(id);}
+    public DefaultCartoonPersonCharacter deleteCharacter(String id,AuthData authData){return characters.remove(id);}
 
     /**
      * <s color="red">БЕЗВОЗВРАТНО УНИЧТОЖИТЬ КОТИКОВ</s> Очистить коллекцию (нужно старое разрушить, чтобы построить новое)
      */
-    public void clear()
+    public void clear(AuthData authData)
     {
         characters.clear();
     }
@@ -168,7 +168,7 @@ public class CharacterCollectionFile extends CharacterCollection
      * При удачном сохранении пишет в консоль info "Successful saving".
      * По умолчанию сохраняется в файл с именем fileName
      */
-    public void save()
+    public void save(AuthData authData)
     {
         save(fileName);
     }

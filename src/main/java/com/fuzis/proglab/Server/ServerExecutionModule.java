@@ -11,6 +11,7 @@ import com.fuzis.proglab.DefaultCartoonPersonCharacter;
 import com.fuzis.proglab.InteractiveInput;
 import com.fuzis.proglab.Server.Collection.CharacterCollection;
 import com.fuzis.proglab.Server.Collection.CharacterCollectionFile;
+import com.fuzis.proglab.Server.Collection.CharacterCollectionSQL;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -52,6 +53,8 @@ public class ServerExecutionModule {
     public ServerConnectionModule _con;
     public Queue<String> history = new LinkedList<>();
     boolean output_mode;
+    CharacterCollection.AuthData auth_data;
+
 
     public void println_supress(Object a) {
         if (supress_inp_invite) return;
@@ -141,7 +144,7 @@ public class ServerExecutionModule {
 
         public Cmds.IDCharacter add_interactive() {
             InteractiveInput inp;
-            if (scan != in_scan)
+            if (scan != in_scan || !output_mode)
                 inp = new InteractiveInput(scan, ServerExecutionModule.this::println_supress, ServerExecutionModule.this::print_supress);
             else inp = new InteractiveInput(write_module, read_module);
             var id = inp.id_interactive();
@@ -172,7 +175,7 @@ public class ServerExecutionModule {
         public void add(List<String> argc) {
             var new_charac = add_interactive();
             if (new_charac == null) return;
-            char_col.add(new_charac.id, new_charac.character);
+            char_col.add(new_charac.id, new_charac.character,auth_data);
             feedback("Successful add");
         }
 
@@ -181,7 +184,7 @@ public class ServerExecutionModule {
             InteractiveInput inp;
             if (scan != in_scan)
                 inp = new InteractiveInput(scan, ServerExecutionModule.this::println_supress, ServerExecutionModule.this::print_supress);
-            else inp = new InteractiveInput(ServerWritingModule.class, ServerReadingModule.class);
+            else inp = new InteractiveInput(write_module, read_module);
             String id = argc.get(0);
             var charac = char_col.getCharacter(id);
             if (charac == null) {
@@ -218,7 +221,7 @@ public class ServerExecutionModule {
         @HiddenCommand
         @InteractiveCommand(args = {0}, usage = {"save - сохранить коллекцию в ранее указанный файл"}, help = "Сохраняет коллекцию")
         public void save(List<String> argc) {
-            char_col.save();
+            char_col.save(auth_data);
         }
 
         @HiddenCommand
@@ -230,13 +233,13 @@ public class ServerExecutionModule {
 
         @InteractiveCommand(args = {0}, usage = {"clear - полная очистка коллекции"}, help = "Осуществляет очистку коллекции")
         public void clear(List<String> argc) {
-            char_col.clear();
+            char_col.clear(auth_data);
             feedback("Successful clearing");
         }
 
         @InteractiveCommand(args = {1}, usage = {"remove_by_id <id> - удалить элемент с указанным id"}, help = "Удаляет указанный элемент")
         public void remove_by_id(List<String> argc) {
-            if (null == char_col.deleteCharacter(argc.get(0))) error("key not found");
+            if (null == char_col.deleteCharacter(argc.get(0),auth_data)) error("key not found");
             else feedback("Successful remove");
         }
 
@@ -244,7 +247,7 @@ public class ServerExecutionModule {
         public void add_if_max(List<String> argc) {
             var new_charac = add_interactive();
             if (char_col.getCharacters().values().stream().allMatch(x -> x.compareTo(new_charac.character) <= 0)) {
-                char_col.add(new_charac.id, new_charac.character);
+                char_col.add(new_charac.id, new_charac.character,auth_data);
                 feedback("Successful add");
             } else {
                 feedback("It is lower than something -> not added");
@@ -255,7 +258,7 @@ public class ServerExecutionModule {
         public void add_if_min(List<String> argc) {
             var new_charac = add_interactive();
             if (char_col.getCharacters().values().stream().allMatch(x -> x.compareTo(new_charac.character) >= 0)) {
-                char_col.add(new_charac.id, new_charac.character);
+                char_col.add(new_charac.id, new_charac.character,auth_data);
                 feedback("Successful add");
             } else {
                 feedback("It is bigger than something -> not added");
@@ -417,8 +420,8 @@ public class ServerExecutionModule {
     public void start_server(InteractiveInput.FakeScanner _in_scan) {
         output_mode = true;
         in_scan = _in_scan;
-        //exit = false;
-        char_col = CharacterCollectionFile.getInstance();
+        auth_data=new CharacterCollection.AuthData("sam","123",2);
+        char_col = CharacterCollectionSQL.getInstance();
         Cmds cmd_class = new Cmds();
         ServerConnectionModule.feedback("Client interactive mode server started");
         supress_inp_invite = false;
@@ -468,12 +471,13 @@ public class ServerExecutionModule {
         ServerConnectionModule.feedback("Interactive mode exit");
     }
 
-    public  void start_console() {
+    public void start_console() {
         output_mode = false;
-        char_col = CharacterCollectionFile.getInstance();
+        auth_data = new CharacterCollection.AuthData("admin","",1);
+        char_col = CharacterCollectionSQL.getInstance();
         Cmds cmd_class = new Cmds();
         feedback("Interactive mode started");
-        var in_scan = new InteractiveInput.FakeScanner(new Scanner(System.in));
+        in_scan = new InteractiveInput.FakeScanner(new Scanner(System.in));
         supress_inp_invite = false;
         while (scan == null || !scan.equals(in_scan)) {
             scan = in_scan;

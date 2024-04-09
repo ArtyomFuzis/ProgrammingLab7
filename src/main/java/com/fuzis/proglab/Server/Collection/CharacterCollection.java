@@ -7,6 +7,7 @@ import java.util.Date;
 import java.util.HashMap;
 
 public abstract class CharacterCollection {
+    public record AuthData(String name, String password,int id){}
 
     private static CharacterCollection _instance;
 
@@ -24,17 +25,17 @@ public abstract class CharacterCollection {
 
     public abstract HashMap<String, DefaultCartoonPersonCharacter> getCharacters();
 
-    public void add(DefaultCartoonPersonCharacter charac) {
-        add(charac.getName(), charac);
+    public void add(DefaultCartoonPersonCharacter charac,AuthData authData) {
+        add(charac.getName(), charac,authData);
     }
 
-    public abstract void add(String id, DefaultCartoonPersonCharacter charac);
+    public abstract void add(String id, DefaultCartoonPersonCharacter charac,AuthData authData);
 
     public abstract void load();
 
     public abstract DefaultCartoonPersonCharacter getCharacter(String id);
 
-    public abstract DefaultCartoonPersonCharacter deleteCharacter(String id);
+    public abstract DefaultCartoonPersonCharacter deleteCharacter(String id,AuthData authData);
 
     protected final Date init_date;
 
@@ -43,11 +44,11 @@ public abstract class CharacterCollection {
         load();
     }
 
-    public abstract void clear();
+    public abstract void clear(AuthData authData);
 
     public abstract String getInfo();
 
     public abstract int size();
 
-    public abstract void save();
+    public abstract void save(AuthData authData);
 }
