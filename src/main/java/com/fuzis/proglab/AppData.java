@@ -15,7 +15,8 @@ public class AppData {
     {
         Msg,
         Cmd,
-        Return
+        Return,
+        Auth
     }
     public record TransferData(TransferPurpose purpose, String body, Integer code,HashMap<String,InteractiveCommandData> map) implements Serializable
     {

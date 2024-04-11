@@ -403,6 +403,7 @@ public class InteractiveInput {
             write(new AppData.TransferData(AppData.TransferPurpose.Cmd,"",21,null));
             var resp = read();
             if (resp.body()==null)return null;
+            System.out.println((resp.body().trim()));
             return new ArrayList<>(Arrays.stream(resp.body().trim().split("\\s*,\\s*")).toList());
         }
         println_supress.accept("Введите дополнительные имена персонажа в строке через запятую");
@@ -482,7 +483,7 @@ public class InteractiveInput {
             return resp.body();
         }
         println_supress.accept("Введите id персонажа");
-        String id = null;
+        String id;
         Boolean match = false;
         while (!match) {
             id = scan.nextLine();
@@ -491,7 +492,7 @@ public class InteractiveInput {
                 println_supress.accept("Введенное значение не может быть id, попробуйте ещё раз");
                 continue;
             }
-            return id;
+            return id.trim();
         }
         return null;
     }

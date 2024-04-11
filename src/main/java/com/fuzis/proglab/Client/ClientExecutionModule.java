@@ -11,6 +11,9 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.*;
 
 public class ClientExecutionModule {
@@ -28,7 +31,6 @@ public class ClientExecutionModule {
 
     public static Queue<String> history = new LinkedList<>();
     public static HashMap<String, AppData.InteractiveCommandData> commands;
-    public static Boolean exit = false;
     public static HashMap<String, ScriptData> executing_scripts = new HashMap<>();
     public static String cur_script = null;
     public static Boolean supress_inp_invite = false;
@@ -134,13 +136,40 @@ public class ClientExecutionModule {
             println("Message send");
         }
 
-        @InteractiveCommand(args = {0}, usage = {"exit заканчивает работу клиента"}, help = "Завершение работы программы ")
+        @InteractiveCommand(args = {0}, usage = {"exit - заканчивает работу клиента"}, help = "Завершение работы программы ")
         public void exit(List<String> argc) {
             feedback("Exiting...");
-            exit = true;
+            System.exit(0);
+        }
+        @InteractiveCommand(args={2},usage = {"auth <пользователь> <пароль> - вход по указанным данным"},help = "Авторизация пользователя")
+        public void auth(List<String> argc) {
+            try {
+                MessageDigest digest = MessageDigest.getInstance("SHA-224");
+                byte[] encodedhash = digest.digest(argc.get(1).getBytes(StandardCharsets.UTF_8));
+                ClientWritingModule.write(new AppData.TransferData(AppData.TransferPurpose.Auth, argc.get(0) + " " + bytesToHex(encodedhash), 1, null));
+                var res = ClientReadingModule.read();
+                if(res.code() == 2)feedback("Successfully authenticated");
+                else warn("Failed to authenticate, check your password");
+            }
+            catch (NoSuchAlgorithmException ex)
+            {
+                System.out.println("Такого алгоритма нет");
+                GoOutTheWindow();
+            }
         }
     }
 
+    private static String bytesToHex(byte[] hash) {
+        StringBuilder hexString = new StringBuilder(2 * hash.length);
+        for (int i = 0; i < hash.length; i++) {
+            String hex = Integer.toHexString(0xff & hash[i]);
+            if(hex.length() == 1) {
+                hexString.append('0');
+            }
+            hexString.append(hex);
+        }
+        return hexString.toString();
+    }
 
     public static void begin() {
         ClientWritingModule.write(new AppData.TransferData(AppData.TransferPurpose.Cmd, "", 3, null));
@@ -170,7 +199,7 @@ public class ClientExecutionModule {
             try {
                 var arr = (ArrayList<String>) a;
                 StringBuilder res = new StringBuilder();
-                for (var el : arr) res.append(el);
+                for (var el : arr) res.append(el+",");
                 return res.toString();
             } catch (ClassCastException ex2) {
                 return a.toString();
@@ -236,7 +265,7 @@ public class ClientExecutionModule {
         supress_inp_invite = false;
         while (scan == null || !scan.equals(in_scan)) {
             scan = in_scan;
-            while (!exit && scan.hasNext()) {
+            while (scan.hasNext()) {
                 String pre = scan.nextLine().trim();
                 if (pre.trim().isEmpty()) continue;
                 String[] cmd = pre.split("\\s+");
@@ -261,7 +290,6 @@ public class ClientExecutionModule {
                 } catch (NoSuchMethodException ex) {
                     if (commands.get(cmd[0]) == null) {
                         error("No such command");
-                        System.out.println(":"+ Arrays.toString(cmd) +":");
                     } else {
                         var cur_command = commands.get(cmd[0]);
                         if (Arrays.stream(cur_command.args()).noneMatch(x -> x == cmd.length - 1)) {

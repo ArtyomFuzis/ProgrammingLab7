@@ -39,7 +39,7 @@ public class ServerMain {
             error("Port not found, redirect to 4352");
             AppData.PORT = 4352;
         }
-        Runtime.getRuntime().addShutdownHook(new Thread(() -> CharacterCollectionFile.getInstance().save(new CharacterCollection.AuthData("admin","",1)), "Shutdown"));
+        //Runtime.getRuntime().addShutdownHook(new Thread(() -> CharacterCollectionFile.getInstance().save(new CharacterCollection.AuthData("admin","",1)), "Shutdown"));
 
         boolean listening_exit = false;
 

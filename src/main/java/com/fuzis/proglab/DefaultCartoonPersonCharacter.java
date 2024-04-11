@@ -60,6 +60,11 @@ public class DefaultCartoonPersonCharacter implements IPersonCharacter,Comparabl
     protected String description;
     protected Integer health;
     protected Double age;
+
+    public DefaultCartoonPersonCharacter(DefaultCartoonPersonCharacter ch) {
+        this(ch.name, ch.sex,ch.quote,ch.opinions,ch.additionalNames,ch.height,ch.weight,ch.isAnimeCharacter,ch.popularity,ch.description, ch.age,ch.health);
+    }
+
     @Override
     public String getQuote() {
         return "\"" + this.quote + "\"";

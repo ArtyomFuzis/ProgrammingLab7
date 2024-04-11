@@ -2,6 +2,7 @@ package com.fuzis.proglab.Server.Collection;
 
 import com.fuzis.proglab.DefaultCartoonPersonCharacter;
 import com.fuzis.proglab.Exception.DataBaseConnectionFailedException;
+import com.fuzis.proglab.Server.ServerExecutionModule;
 
 import java.util.Date;
 import java.util.HashMap;
@@ -25,17 +26,17 @@ public abstract class CharacterCollection {
 
     public abstract HashMap<String, DefaultCartoonPersonCharacter> getCharacters();
 
-    public void add(DefaultCartoonPersonCharacter charac,AuthData authData) {
-        add(charac.getName(), charac,authData);
+    public void add(DefaultCartoonPersonCharacter charac, ServerExecutionModule exec) {
+        add(charac.getName(), charac,exec);
     }
 
-    public abstract void add(String id, DefaultCartoonPersonCharacter charac,AuthData authData);
+    public abstract void add(String id, DefaultCartoonPersonCharacter charac,ServerExecutionModule exec);
 
     public abstract void load();
 
     public abstract DefaultCartoonPersonCharacter getCharacter(String id);
 
-    public abstract DefaultCartoonPersonCharacter deleteCharacter(String id,AuthData authData);
+    public abstract DefaultCartoonPersonCharacter deleteCharacter(String id,ServerExecutionModule exec);
 
     protected final Date init_date;
 
@@ -44,11 +45,11 @@ public abstract class CharacterCollection {
         load();
     }
 
-    public abstract void clear(AuthData authData);
+    public abstract void clear(ServerExecutionModule exec);
 
     public abstract String getInfo();
 
     public abstract int size();
 
-    public abstract void save(AuthData authData);
+    public abstract void save(ServerExecutionModule exec);
 }

@@ -4,6 +4,8 @@ package com.fuzis.proglab.Server;
 import com.fuzis.proglab.Annotations.HiddenCommand;
 import com.fuzis.proglab.Annotations.InteractiveCommand;
 import com.fuzis.proglab.AppData;
+import com.fuzis.proglab.Client.ClientReadingModule;
+import com.fuzis.proglab.Client.ClientWritingModule;
 import com.fuzis.proglab.Enums.Opinion;
 import com.fuzis.proglab.Enums.Popularity;
 import com.fuzis.proglab.Enums.Sex;
@@ -19,6 +21,13 @@ import org.slf4j.LoggerFactory;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.lang.reflect.InvocationTargetException;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.*;
 
 public class ServerExecutionModule {
@@ -53,7 +62,7 @@ public class ServerExecutionModule {
     public ServerConnectionModule _con;
     public Queue<String> history = new LinkedList<>();
     boolean output_mode;
-    CharacterCollection.AuthData auth_data;
+    public CharacterCollection.AuthData auth_data;
 
 
     public void println_supress(Object a) {
@@ -175,22 +184,23 @@ public class ServerExecutionModule {
         public void add(List<String> argc) {
             var new_charac = add_interactive();
             if (new_charac == null) return;
-            char_col.add(new_charac.id, new_charac.character,auth_data);
+            char_col.add(new_charac.id, new_charac.character,ServerExecutionModule.this);
             feedback("Successful add");
         }
 
         @InteractiveCommand(args = {1}, usage = {"update <id>- изменение персонажа, содержащегося в коллекции, можно изменять конкретные поля, в остальных останутся предыдущие значения, end - для выхода", "<name> - имя", "<sex> пол персонажа, элемент из перечисления Sex", "<quote> - строка, цитата персонажа", "<height> - рост персонажа", "<weight> - вес персонажа", "<popularity> - популярность персонажа, элемент из перечисления Popularity", "<description> - строка, описание персонажа", "<age> - возраст персонажа", "<health> - значение здоровья персонажа в целочисленных условных единицах", "<isAnimeCharacter> - является ли アニメ персонажем, значение Yes/No", "<additionalNames> - строка, дополнительные имена персонажа, перечисление через запятую", "<opinions> - мнения о других персонажах (не обязательно из коллекции) в виде <имя>:<отношение>, <имя2>:<отношение2>... отношение - значение из перечисления Opinion"}, help = "Изменяет элемент в коллекции")
         public void update(List<String> argc) {
             InteractiveInput inp;
-            if (scan != in_scan)
+            if (scan != in_scan || !output_mode)
                 inp = new InteractiveInput(scan, ServerExecutionModule.this::println_supress, ServerExecutionModule.this::print_supress);
             else inp = new InteractiveInput(write_module, read_module);
             String id = argc.get(0);
-            var charac = char_col.getCharacter(id);
-            if (charac == null) {
+            var charac_o = char_col.getCharacter(id);
+            if (charac_o == null) {
                 error("Character not found");
                 return;
             }
+            var charac = new DefaultCartoonPersonCharacter(charac_o);
             while (true) {
                 var str = inp.type_interactive();
                 feedback("Updating: " + str);
@@ -210,6 +220,9 @@ public class ServerExecutionModule {
                     case "end" -> {
                         if (in_scan == scan)
                             write_module.write(new AppData.TransferData(AppData.TransferPurpose.Cmd, "", 1, null));
+                        char_col.deleteCharacter(id,ServerExecutionModule.this);
+                        char_col.add(id,charac, ServerExecutionModule.this);
+
                         feedback("End update");
                         return;
                     }
@@ -221,7 +234,7 @@ public class ServerExecutionModule {
         @HiddenCommand
         @InteractiveCommand(args = {0}, usage = {"save - сохранить коллекцию в ранее указанный файл"}, help = "Сохраняет коллекцию")
         public void save(List<String> argc) {
-            char_col.save(auth_data);
+            char_col.save(ServerExecutionModule.this);
         }
 
         @HiddenCommand
@@ -233,13 +246,13 @@ public class ServerExecutionModule {
 
         @InteractiveCommand(args = {0}, usage = {"clear - полная очистка коллекции"}, help = "Осуществляет очистку коллекции")
         public void clear(List<String> argc) {
-            char_col.clear(auth_data);
+            char_col.clear(ServerExecutionModule.this);
             feedback("Successful clearing");
         }
 
         @InteractiveCommand(args = {1}, usage = {"remove_by_id <id> - удалить элемент с указанным id"}, help = "Удаляет указанный элемент")
         public void remove_by_id(List<String> argc) {
-            if (null == char_col.deleteCharacter(argc.get(0),auth_data)) error("key not found");
+            if (null == char_col.deleteCharacter(argc.get(0),ServerExecutionModule.this)) error("key not found");
             else feedback("Successful remove");
         }
 
@@ -247,7 +260,7 @@ public class ServerExecutionModule {
         public void add_if_max(List<String> argc) {
             var new_charac = add_interactive();
             if (char_col.getCharacters().values().stream().allMatch(x -> x.compareTo(new_charac.character) <= 0)) {
-                char_col.add(new_charac.id, new_charac.character,auth_data);
+                char_col.add(new_charac.id, new_charac.character,ServerExecutionModule.this);
                 feedback("Successful add");
             } else {
                 feedback("It is lower than something -> not added");
@@ -258,7 +271,7 @@ public class ServerExecutionModule {
         public void add_if_min(List<String> argc) {
             var new_charac = add_interactive();
             if (char_col.getCharacters().values().stream().allMatch(x -> x.compareTo(new_charac.character) >= 0)) {
-                char_col.add(new_charac.id, new_charac.character,auth_data);
+                char_col.add(new_charac.id, new_charac.character,ServerExecutionModule.this);
                 feedback("Successful add");
             } else {
                 feedback("It is bigger than something -> not added");
@@ -366,8 +379,50 @@ public class ServerExecutionModule {
                 error("File not found or unable to read");
             }
         }
-    }
+        @HiddenCommand
+        @InteractiveCommand(args={2},usage = {"register <пользователь> <пароль> - добавить пользователя с указанным именем и паролем"},help = "Регистрация нового пользователя")
+        public void register(List<String> argc) {
+            try {
+                MessageDigest digest = MessageDigest.getInstance("SHA-224");
+                byte[] encodedhash = digest.digest(argc.get(1).getBytes(StandardCharsets.UTF_8));
+                String pass = bytesToHex(encodedhash);
+                String user = argc.get(0);
+                PreparedStatement st = CharacterCollectionSQL.con.prepareStatement("INSERT INTO auth (username,password) VALUES (?,?)");
+                st.setString(1, user);
+                st.setString(2, pass);
+                try {
+                    st.executeUpdate();
+                    feedback("Successful registration");
+                }
+                catch (SQLException e)
+                {
+                    error("User with this id already exists");
+                }
 
+            }
+            catch (NoSuchAlgorithmException ex)
+            {
+                error("Такого алгоритма нет.... WHAT?!");
+            }
+            catch (SQLException e)
+            {
+                error(e.getMessage());
+                e.printStackTrace();
+            }
+
+        }
+    }
+    private static String bytesToHex(byte[] hash) {
+        StringBuilder hexString = new StringBuilder(2 * hash.length);
+        for (int i = 0; i < hash.length; i++) {
+            String hex = Integer.toHexString(0xff & hash[i]);
+            if(hex.length() == 1) {
+                hexString.append('0');
+            }
+            hexString.append(hex);
+        }
+        return hexString.toString();
+    }
     public void msg_handle(AppData.TransferData msg) {
         ServerConnectionModule.feedback("Got message: " + msg.body());
     }
@@ -407,6 +462,9 @@ public class ServerExecutionModule {
                     ServerConnectionModule.warn("Unexpected return: [" + msg.code() + "] " + msg.body());
                     write_module.write(new AppData.TransferData(AppData.TransferPurpose.Cmd, "", 1, null));
                     break;
+                case Auth:
+                    auth(msg);
+                    break;
             }
         }
     }
@@ -416,11 +474,36 @@ public class ServerExecutionModule {
         write_module = new ServerWritingModule(con);
         read_module = new ServerReadingModule(con);
     }
+    public void auth(AppData.TransferData msg)
+    {
+        var det = msg.body().split(" ");
+        String user = det[0];
+        String pass = det[1];
+        var con  = CharacterCollectionSQL.con;
+        try {
+            PreparedStatement st = con.prepareStatement("SELECT * FROM auth WHERE username = ? and password = ?");
+            System.out.println(user);
+            System.out.println(pass);
+            st.setString(1, user);
+            st.setString(2, pass);
+            ResultSet rs = st.executeQuery();
+            if (rs.next())
+            {
+                auth_data = new CharacterCollection.AuthData(user,pass,rs.getInt("id"));
+                write_module.write(new AppData.TransferData(AppData.TransferPurpose.Auth,null,2,null));
+            }
+            else write_module.write(new AppData.TransferData(AppData.TransferPurpose.Auth,null,3,null));
+        }
+        catch (SQLException e)
+        {
+            error(e.getMessage());
+            e.printStackTrace();
+        }
+    }
 
     public void start_server(InteractiveInput.FakeScanner _in_scan) {
         output_mode = true;
         in_scan = _in_scan;
-        auth_data=new CharacterCollection.AuthData("sam","123",2);
         char_col = CharacterCollectionSQL.getInstance();
         Cmds cmd_class = new Cmds();
         ServerConnectionModule.feedback("Client interactive mode server started");

@@ -1,10 +1,13 @@
 package com.fuzis.proglab.Server.Collection;
 
+import com.fuzis.proglab.Client.ClientExecutionModule;
 import com.fuzis.proglab.DefaultCartoonPersonCharacter;
 import com.fuzis.proglab.Enums.Opinion;
 import com.fuzis.proglab.Enums.Popularity;
 import com.fuzis.proglab.Enums.Sex;
 import com.fuzis.proglab.Exception.DataBaseConnectionFailedException;
+import com.fuzis.proglab.Exception.NoRulesException;
+import com.fuzis.proglab.Server.ServerExecutionModule;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -14,9 +17,8 @@ import java.util.*;
 
 public class CharacterCollectionSQL extends CharacterCollection {
 
-    private Connection con;
-    private HashMap<String, DefaultCartoonPersonCharacter> characters;
-    private HashMap<String, Integer> belongsto;
+    public static Connection con;
+    private static HashMap<String, DefaultCartoonPersonCharacter> characters;
 
     @Override
     public HashMap<String, DefaultCartoonPersonCharacter> getCharacters() {
@@ -28,35 +30,73 @@ public class CharacterCollectionSQL extends CharacterCollection {
         return getInstance(CharacterCollectionSQL.class);
     }
 
-    PreparedStatement st_add;
-    String SON(Object a)
-    {
-        if(a==null)return null;
+    PreparedStatement st_add1;
+    PreparedStatement st_add2;
+    PreparedStatement st_add3;
+    PreparedStatement st_add_s;
+
+    String SON(Object a) {
+        if (a == null) return null;
         return a.toString();
     }
+
     @Override
-    public synchronized void add(String id, DefaultCartoonPersonCharacter charac,AuthData authData) {
-        try {
-            if(st_add == null)
-             st_add = con.prepareStatement("insert into character (string_id,name,sex,quote,height,weight,popularity,age,description,health,isanimecharacter,belongsto) VALUES (?,?,?::\"sex\",?,?,?,?::\"popularity\",?,?,?,?,?);");
-            st_add.setString(1, id);
-            st_add.setString(2, charac.getName());
-            st_add.setString(3,SON(charac.getSex()));
-            st_add.setString(4, charac.getQuote());
-            if(charac.getHeight()!=null)st_add.setDouble(5,charac.getHeight()); else st_add.setNull(5, Types.FLOAT);
-            if(charac.getWeight()!=null)st_add.setDouble(6,charac.getWeight()); else st_add.setNull(6, Types.FLOAT);
-            st_add.setString(7, SON(charac.getPopularity()));
-            if(charac.getAge()!=null)st_add.setDouble(8,charac.getAge()); else st_add.setNull(8, Types.FLOAT);
-            st_add.setString(9, charac.getDescription());
-            if(charac.getHealth()!=null)st_add.setInt(10, charac.getHealth()); else st_add.setNull(10, Types.INTEGER);
-            if(charac.getAnimeCharacter()!=null)st_add.setBoolean(11,charac.getAnimeCharacter()); else st_add.setNull(11, Types.BOOLEAN);
-            st_add.setInt(12, authData.id());
-            st_add.execute();
-            characters.put(id, charac);
-        }
-        catch (SQLException e)
+    public synchronized void add(String id, DefaultCartoonPersonCharacter charac, ServerExecutionModule exec) {
+        if(exec.auth_data == null)
         {
-            System.out.println(e.getMessage());
+            exec.error("Not authorized");
+            throw new NoRulesException();
+        }
+        try {
+            AuthData authData = exec.auth_data;
+            if (st_add1 == null)
+                st_add1 = con.prepareStatement("insert into character (string_id,name,sex,quote,height,weight,popularity,age,description,health,isanimecharacter,belongsto) VALUES (?,?,?::\"sex\",?,?,?,?::\"popularity\",?,?,?,?,?);");
+            if (st_add2 == null)
+                st_add2 = con.prepareStatement("insert into character_additionalnames (character_id,additionalname) VALUES (?,?);");
+            if (st_add3 == null)
+                st_add3 = con.prepareStatement("insert into character_opinions (character_id,personto,opinion) VALUES (?,?,?::\"opinion\");");
+            if (st_add_s == null)
+                st_add_s = con.prepareStatement("select * from character where string_id = ?");
+            st_add1.setString(1, id);
+            st_add1.setString(2, charac.getName());
+            st_add1.setString(3, SON(charac.getSex()));
+            st_add1.setString(4, charac.getQuote());
+            if (charac.getHeight() != null) st_add1.setDouble(5, charac.getHeight());
+            else st_add1.setNull(5, Types.FLOAT);
+            if (charac.getWeight() != null) st_add1.setDouble(6, charac.getWeight());
+            else st_add1.setNull(6, Types.FLOAT);
+            st_add1.setString(7, SON(charac.getPopularity()));
+            if (charac.getAge() != null) st_add1.setDouble(8, charac.getAge());
+            else st_add1.setNull(8, Types.FLOAT);
+            st_add1.setString(9, charac.getDescription());
+            if (charac.getHealth() != null) st_add1.setInt(10, charac.getHealth());
+            else st_add1.setNull(10, Types.INTEGER);
+            if (charac.getAnimeCharacter() != null) st_add1.setBoolean(11, charac.getAnimeCharacter());
+            else st_add1.setNull(11, Types.BOOLEAN);
+            st_add1.setInt(12, authData.id());
+            st_add1.execute();
+            st_add_s.setString(1, id);
+            ResultSet res = st_add_s.executeQuery();
+            res.next();
+            int int_id = res.getInt("id");
+            if (charac.getAdditionalNames() != null) {
+                st_add2.setInt(1, int_id);
+                for (var el : charac.getAdditionalNames()) {
+                    st_add2.setString(2, el);
+                    st_add2.execute();
+                }
+            }
+            if (charac.getOpinions() != null) {
+                st_add3.setInt(1, int_id);
+                for (var el : charac.getOpinions().keySet()) {
+                    st_add3.setString(2, el);
+                    st_add3.setString(3, charac.getOpinions().get(el).toString());
+                    st_add3.execute();
+                }
+            }
+            characters.put(id, charac);
+        } catch (SQLException e) {
+            exec.error(e.getMessage());
             e.printStackTrace();
         }
 
@@ -65,7 +105,6 @@ public class CharacterCollectionSQL extends CharacterCollection {
     @Override
     public void load() {
         characters = new HashMap<>();
-        belongsto = new HashMap<>();
         Properties db_prop = new Properties();
         try {
             db_prop.load(Files.newInputStream(Paths.get("db.properties")));
@@ -107,18 +146,18 @@ public class CharacterCollectionSQL extends CharacterCollection {
                     "description TEXT,\n" +
                     "health INT,\n" +
                     "isAnimeCharacter BOOLEAN,\n" +
-                    "belongsto INT NOT NULL REFERENCES auth(id)\n" +
+                    "belongsto INT NOT NULL REFERENCES auth(id) ON DELETE CASCADE\n" +
                     ");\n" +
                     "CREATE TABLE IF NOT EXISTS character_additionalnames\n" +
                     "(\n" +
                     "id SERIAL PRIMARY KEY,\n" +
-                    "character_id INT NOT NULL REFERENCES character(id),\n" +
+                    "character_id INT NOT NULL REFERENCES character(id) ON DELETE CASCADE,\n" +
                     "additionalname TEXT\n" +
                     ");\n" +
                     "CREATE TABLE IF NOT EXISTS character_opinions\n" +
                     "(\n" +
                     "id SERIAL PRIMARY KEY,\n" +
-                    "character_id INT NOT NULL REFERENCES character(id),\n" +
+                    "character_id INT NOT NULL REFERENCES character(id) ON DELETE CASCADE,\n" +
                     "personto TEXT UNIQUE,\n" +
                     "opinion OPINION\n" +
                     ");");
@@ -133,7 +172,7 @@ public class CharacterCollectionSQL extends CharacterCollection {
                                 rs.getDouble("height"),
                                 rs.getDouble("weight"),
                                 rs.getBoolean("isAnimeCharacter"),
-                                rs.getString("popularity") == null ? null : Popularity.valueOf(rs.getString(rs.getString("popularity"))),
+                                rs.getString("popularity") == null ? null : Popularity.valueOf(rs.getString("popularity")),
                                 rs.getString("description"),
                                 rs.getDouble("age"),
                                 rs.getInt("health")
@@ -156,14 +195,12 @@ public class CharacterCollectionSQL extends CharacterCollection {
                 pc.setOpinions(opinions);
                 sub_rs2.close();
                 characters.put(rs.getString("string_id"), pc);
-                belongsto.put(rs.getString("string_id"),rs.getInt("belongsto"));
             }
             rs.close();
 
         } catch (SQLException e) {
             e.printStackTrace();
             throw new DataBaseConnectionFailedException(e.getMessage());
-
         }
 
 
@@ -171,31 +208,90 @@ public class CharacterCollectionSQL extends CharacterCollection {
 
     @Override
     public synchronized DefaultCartoonPersonCharacter getCharacter(String id) {
-        return null;
+        return characters.get(id);
     }
 
+    PreparedStatement st_delete;
+    PreparedStatement st_delete_s;
+
     @Override
-    public synchronized DefaultCartoonPersonCharacter deleteCharacter(String id,AuthData authData) {
-        return null;
+    public synchronized DefaultCartoonPersonCharacter deleteCharacter(String id, ServerExecutionModule exec) {
+        if(exec.auth_data == null)
+        {
+            exec.error("Not authorized");
+            throw new NoRulesException();
+        }
+        try {
+            if(st_delete == null)st_delete = con.prepareStatement("DELETE FROM character Where string_id = ?");
+            if(st_delete_s == null)st_delete_s = con.prepareStatement("SELECT * FROM character WHERE string_id = ?");
+            st_delete_s.setString(1, id);
+            ResultSet rs =  st_delete_s.executeQuery();
+            if(!rs.next())return null;
+            if(!Objects.equals(exec.auth_data.name(), "admin") && rs.getInt("belongsto")!=exec.auth_data.id())
+            {
+                exec.error("No rules to delete this character");
+                throw new NoRulesException();
+            }
+            st_delete.setString(1,id);
+            st_delete.executeUpdate();
+            var charac = characters.get(id);
+            characters.remove(id);
+            return charac;
+
+        } catch (SQLException e) {
+            exec.error(e.getMessage());
+            e.printStackTrace();
+            return null;
+        }
     }
 
-    @Override
-    public synchronized void clear(AuthData authData) {
+    PreparedStatement st_clear;
+    PreparedStatement st_clear_person;
 
+    @Override
+    public synchronized void clear(ServerExecutionModule exec) {
+        if(exec.auth_data == null)
+        {
+            exec.error("Not authorized");
+            throw new NoRulesException();
+        }
+        try {
+            if (exec.auth_data.name() == "admin") {
+
+                if (st_clear == null)
+                    st_clear = con.prepareStatement("DELETE FROM character;");
+                exec.feedback("Deleted: " + st_clear.executeUpdate() + " characters");
+                characters.clear();
+
+            } else {
+                if (st_clear_person == null)
+                    st_clear_person = con.prepareStatement("DELETE FROM character WHERE belongsto = ?;");
+                st_clear_person.setInt(1, exec.auth_data.id());
+                exec.feedback("Deleted: " + st_clear_person.executeUpdate() + " characters");
+                load();
+            }
+        } catch (SQLException e) {
+            exec.error(e.getMessage());
+            e.printStackTrace();
+        }
     }
 
     @Override
     public String getInfo() {
-        return "";
+        return "Class: " + this.getClass() + "\n"
+                + "Collection Type: " + characters.getClass() + "\n"
+                + "Connection Type: " + con.getClass() + "\n"
+                + "Count of elements: " + characters.size() + "\n"
+                + "Initialization date: " + init_date;
     }
 
     @Override
     public synchronized int size() {
-        return 0;
+        return characters.size();
     }
 
     @Override
-    public void save(AuthData authData) {
-
+    public void save(ServerExecutionModule exec) {
+        exec.warn("There is nothing to do");
     }
 }
