@@ -50,11 +50,11 @@ public class CharacterCollectionSQL extends CharacterCollection {
         try {
             AuthData authData = exec.auth_data;
             if (st_add1 == null)
-                st_add1 = con.prepareStatement("insert into character (string_id,name,sex,quote,height,weight,popularity,age,description,health,isanimecharacter,belongsto) VALUES (?,?,?::\"sex\",?,?,?,?::\"popularity\",?,?,?,?,?);");
+                st_add1 = con.prepareStatement("insert into character (string_id,name,sex,quote,height,weight,popularity,age,description,health,isanimecharacter,belongsto) VALUES (?,?,?::\"sex_1\",?,?,?,?::\"popularity_1\",?,?,?,?,?);");
             if (st_add2 == null)
                 st_add2 = con.prepareStatement("insert into character_additionalnames (character_id,additionalname) VALUES (?,?);");
             if (st_add3 == null)
-                st_add3 = con.prepareStatement("insert into character_opinions (character_id,personto,opinion) VALUES (?,?,?::\"opinion\");");
+                st_add3 = con.prepareStatement("insert into character_opinions (character_id,personto,opinion) VALUES (?,?,?::\"opinion_1\");");
             if (st_add_s == null)
                 st_add_s = con.prepareStatement("select * from character where string_id = ?");
             st_add1.setString(1, id);
@@ -109,7 +109,9 @@ public class CharacterCollectionSQL extends CharacterCollection {
         try {
             db_prop.load(Files.newInputStream(Paths.get("db.properties")));
         } catch (IOException e) {
-            throw new DataBaseConnectionFailedException("db.properties not found or could not be loaded");
+            //throw new DataBaseConnectionFailedException("db.properties not found or could not be loaded");
+            System.out.println("ERROR: NO db.properties file");
+            System.exit(1);
         }
         String DB_URL = db_prop.getProperty("DB_URL");
         try {
@@ -117,31 +119,31 @@ public class CharacterCollectionSQL extends CharacterCollection {
             Statement st = con.createStatement();
             var res = st.execute("DO $$\n" +
                     "BEGIN\n" +
-                    "    IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'sex') THEN\n" +
-                    "        CREATE TYPE SEX AS ENUM ('Male','Female','Unknown','Stone','Anime');\n" +
+                    "    IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'sex_1') THEN\n" +
+                    "        CREATE TYPE SEX_1 AS ENUM ('Male','Female','Unknown','Stone','Anime');\n" +
                     "    END IF;\n" +
-                    "\tIF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'popularity') THEN\n" +
-                    "        CREATE TYPE POPULARITY AS ENUM('Megazero','Verylow','Justlow','Usualone','Notbad','Normal','Good','Perfect','Awesome','Animecharacter');\n" +
+                    "\tIF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'popularity_1') THEN\n" +
+                    "        CREATE TYPE POPULARITY_1 AS ENUM('Megazero','Verylow','Justlow','Usualone','Notbad','Normal','Good','Perfect','Awesome','Animecharacter');\n" +
                     "    END IF;\n" +
-                    "\tIF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'opinion') THEN\n" +
-                    "\t\tCREATE TYPE OPINION AS ENUM('Positive','Neutral','Negative','Undefined');\n" +
+                    "\tIF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'opinion_1') THEN\n" +
+                    "\t\tCREATE TYPE OPINION_1 AS ENUM('Positive','Neutral','Negative','Undefined');\n" +
                     "    END IF;\n" +
                     "END\n" +
                     "$$;\n" +
                     "CREATE TABLE IF NOT EXISTS auth(\n" +
                     "id SERIAL PRIMARY KEY,\n" +
                     "username VARCHAR(255) NOT NULL UNIQUE,\n" +
-                    "password CHAR(224)\n" +
+                    "password CHAR(56)\n" +
                     ");\n" +
                     "CREATE TABLE IF NOT EXISTS character(\n" +
                     "id SERIAL PRIMARY KEY,\n" +
                     "string_id TEXT NOT NULL UNIQUE,\n" +
                     "name TEXT,\n" +
-                    "sex SEX,\n" +
+                    "sex SEX_1,\n" +
                     "quote TEXT,\n" +
                     "height FLOAT,\n" +
                     "weight FLOAT,\n" +
-                    "popularity POPULARITY,\n" +
+                    "popularity POPULARITY_1,\n" +
                     "age FLOAT,\n" +
                     "description TEXT,\n" +
                     "health INT,\n" +
@@ -159,8 +161,19 @@ public class CharacterCollectionSQL extends CharacterCollection {
                     "id SERIAL PRIMARY KEY,\n" +
                     "character_id INT NOT NULL REFERENCES character(id) ON DELETE CASCADE,\n" +
                     "personto TEXT UNIQUE,\n" +
-                    "opinion OPINION\n" +
-                    ");");
+                    "opinion OPINION_1\n" +
+                    ");" +
+                    "DO $$\n" +
+                    "BEGIN\n" +
+                    "    IF NOT EXISTS (SELECT 1 FROM auth WHERE username = 'admin' AND id = 1) THEN\n" +
+                    "        DELETE FROM auth WHERE id=1; \n" +
+                    "        INSERT INTO auth VALUES (1,'admin',''); \n" +
+                    "    END IF;\n" +
+                    /*"    IF NOT EXISTS (SELECT 1 FROM (select currval('auth_id_seq') as currval) t WHERE currval=1) THEN\n" +
+                    "        PERFORM nextval('auth_id_seq');" +
+                    "    END IF;\n" +*/
+                    "END\n" +
+                    "$$;\n");
             ResultSet rs = st.executeQuery("select * from character");
             while (rs.next()) {
                 DefaultCartoonPersonCharacter pc =

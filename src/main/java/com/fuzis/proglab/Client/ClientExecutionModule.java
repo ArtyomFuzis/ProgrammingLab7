@@ -145,7 +145,8 @@ public class ClientExecutionModule {
         public void auth(List<String> argc) {
             try {
                 MessageDigest digest = MessageDigest.getInstance("SHA-224");
-                byte[] encodedhash = digest.digest(argc.get(1).getBytes(StandardCharsets.UTF_8));
+                var to_encode = argc.get(1) + "ロシア語？`ёавыаэб.hu9u0gjbhteo;iboh;itesr455453";
+                byte[] encodedhash = digest.digest(to_encode.getBytes(StandardCharsets.UTF_8));
                 ClientWritingModule.write(new AppData.TransferData(AppData.TransferPurpose.Auth, argc.get(0) + " " + bytesToHex(encodedhash), 1, null));
                 var res = ClientReadingModule.read();
                 if(res.code() == 2)feedback("Successfully authenticated");

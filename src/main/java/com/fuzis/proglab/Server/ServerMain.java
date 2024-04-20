@@ -59,7 +59,7 @@ public class ServerMain {
             ServerExecutionModule exec = new ServerExecutionModule(con);
             var in_scan = new InteractiveInput.FakeScanner((a) -> {
                 var res = exec.getNextInteractive();
-                if (res == null) a.close();
+                if (res == null) {a.close();}
                 a.add(res);
             });
             Thread thr = new Thread(task);

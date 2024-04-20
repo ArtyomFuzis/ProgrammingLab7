@@ -36,6 +36,7 @@ public class InteractiveInput {
         public void add(String a) {
             arr.add(a);
         }
+        public void add(String[] a){arr.addAll(Arrays.asList(a));}
 
         public String nextLine() {
             if (scan != null) return scan.nextLine();

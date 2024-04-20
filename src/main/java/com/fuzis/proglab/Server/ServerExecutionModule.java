@@ -284,18 +284,6 @@ public class ServerExecutionModule {
                 feedback("Collection is empty");
                 return;
             }
-            /*ArrayList<Cmds.IDCharacter> id_character_arr = new ArrayList<>();
-            for (var el : char_col.getCharacters().keySet()) {
-                id_character_arr.add(new Cmds.IDCharacter(el, char_col.getCharacter(el)));
-            }
-            char_col.getCharacters().keySet().stream().map((x)->new Cmds.IDCharacter(x, char_col.getCharacter(x)));
-            var res = id_character_arr.stream().min((o1, o2) -> {
-                if (Objects.equals(o1.character.getAge(), o2.character.getAge())) return 0;
-                if (o1.character.getAge() == null) return 1;
-                if (o2.character.getAge() == null) return -1;
-                if (o1.character.getAge() > o2.character.getAge()) return 1;
-                return -1;
-            }).get();*/
             var res = char_col.getCharacters().keySet().stream().map((x) -> new Cmds.IDCharacter(x, char_col.getCharacter(x))).min((o1, o2) -> {
                 if (Objects.equals(o1.character.getAge(), o2.character.getAge())) return 0;
                 if (o1.character.getAge() == null) return 1;
@@ -316,14 +304,6 @@ public class ServerExecutionModule {
                 feedback("Collection is empty");
                 return;
             }
-            /*ArrayList<Cmds.SSPair> names = new ArrayList<>();
-            for (var el : char_col.getCharacters().keySet()) {
-                names.add(new Cmds.SSPair(el, char_col.getCharacter(el).getName()));
-            }
-            names.sort(((o1, o2) -> -((String) o1.two).compareTo((String) o2.two)));
-            for (var el : names) {
-                println(el.one + ": " + el.two);
-            }*/
             var cmp = new Comparator<SSPair>() {
                 @Override
                 public int compare(SSPair o1, SSPair o2) {
@@ -342,19 +322,12 @@ public class ServerExecutionModule {
                 feedback("Collection is empty");
                 return;
             }
-            /*ArrayList<Cmds.SSPair> ages = new ArrayList<>();
-            for (var el : char_col.getCharacters().keySet()) {
-                ages.add(new Cmds.SSPair(el, char_col.getCharacter(el).getHealth()));
-            }*/
             (char_col.getCharacters().keySet().stream().map((x) -> new Cmds.SSPair(x, char_col.getCharacter(x).getHealth()))).sorted(((o1, o2) -> {
                 if (o1.two == o2.two && o1.two == null) return 0;
                 if (o1.two == null) return 1;
                 if (o2.two == null) return -1;
                 return ((Integer) o1.two).compareTo((Integer) o2.two);
             })).forEach((x) -> println(x.one + ": " + x.two));
-            /*for (var el : ages) {
-                println(el.one + ": " + el.two);
-            }*/
         }
 
         @InteractiveCommand(args = {0}, usage = {"info - выводит некоторую информацию о коллекции"}, help = "Выводит информацию о коллекции персонажей")
@@ -384,7 +357,8 @@ public class ServerExecutionModule {
         public void register(List<String> argc) {
             try {
                 MessageDigest digest = MessageDigest.getInstance("SHA-224");
-                byte[] encodedhash = digest.digest(argc.get(1).getBytes(StandardCharsets.UTF_8));
+                var to_encode = argc.get(1) + "ロシア語？`ёавыаэб.hu9u0gjbhteo;iboh;itesr455453";
+                byte[] encodedhash = digest.digest(to_encode.getBytes(StandardCharsets.UTF_8));
                 String pass = bytesToHex(encodedhash);
                 String user = argc.get(0);
                 PreparedStatement st = CharacterCollectionSQL.con.prepareStatement("INSERT INTO auth (username,password) VALUES (?,?)");
@@ -396,9 +370,15 @@ public class ServerExecutionModule {
                 }
                 catch (SQLException e)
                 {
-                    error("User with this id already exists");
+                    try {
+                        st.executeUpdate();
+                        feedback("Successful registration");
+                    }
+                    catch (SQLException e2)
+                    {
+                        error("User with this id already exists");
+                    }
                 }
-
             }
             catch (NoSuchAlgorithmException ex)
             {
