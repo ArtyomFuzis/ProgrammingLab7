@@ -1,33 +1,42 @@
 package com.fuzis.proglab.Server.Collection;
 
-import com.fuzis.proglab.Client.ClientExecutionModule;
+import com.fuzis.proglab.AppData;
 import com.fuzis.proglab.DefaultCartoonPersonCharacter;
 import com.fuzis.proglab.Enums.Opinion;
 import com.fuzis.proglab.Enums.Popularity;
 import com.fuzis.proglab.Enums.Sex;
 import com.fuzis.proglab.Exception.DataBaseConnectionFailedException;
-import com.fuzis.proglab.Exception.NoRulesException;
+import com.fuzis.proglab.Exception.NoRootsException;
 import com.fuzis.proglab.Server.ServerExecutionModule;
+import com.fuzis.proglab.Server.ServerMain;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.sql.*;
 import java.util.*;
+import java.util.Date;
 
-public class CharacterCollectionSQL extends CharacterCollection {
-
+public class CharacterCollectionSQL {
+    /*public static final Logger logger = LoggerFactory.getLogger(CharacterCollectionSQL.class);
     public static Connection con;
     private static HashMap<String, DefaultCartoonPersonCharacter> characters;
 
-    @Override
     public HashMap<String, DefaultCartoonPersonCharacter> getCharacters() {
         return characters;
     }
+    Date init_date;
+    private CharacterCollectionSQL() {init_date = new Date();}
+    private static CharacterCollectionSQL _instance;
 
-
-    public static CharacterCollection getInstance() {
-        return getInstance(CharacterCollectionSQL.class);
+    public static CharacterCollectionSQL getInstance() {
+        if(_instance == null)
+        {
+            _instance = new CharacterCollectionSQL();
+        }
+        return _instance;
     }
 
     PreparedStatement st_add1;
@@ -40,15 +49,14 @@ public class CharacterCollectionSQL extends CharacterCollection {
         return a.toString();
     }
 
-    @Override
-    public synchronized void add(String id, DefaultCartoonPersonCharacter charac, ServerExecutionModule exec) {
+    public synchronized void add(String id, DefaultCartoonPersonCharacter charac) {
         if(exec.auth_data == null)
         {
-            exec.error("Not authorized");
-            throw new NoRulesException();
+            logger.error("Not authorized");
+            throw new NoRootsException();
         }
         try {
-            AuthData authData = exec.auth_data;
+            AppData.AuthData authData = exec.auth_data;
             if (st_add1 == null)
                 st_add1 = con.prepareStatement("insert into character (string_id,name,sex,quote,height,weight,popularity,age,description,health,isanimecharacter,belongsto) VALUES (?,?,?::\"sex_1\",?,?,?,?::\"popularity_1\",?,?,?,?,?);");
             if (st_add2 == null)
@@ -102,7 +110,6 @@ public class CharacterCollectionSQL extends CharacterCollection {
 
     }
 
-    @Override
     public void load() {
         characters = new HashMap<>();
         Properties db_prop = new Properties();
@@ -169,9 +176,6 @@ public class CharacterCollectionSQL extends CharacterCollection {
                     "        DELETE FROM auth WHERE id=1; \n" +
                     "        INSERT INTO auth VALUES (1,'admin',''); \n" +
                     "    END IF;\n" +
-                    /*"    IF NOT EXISTS (SELECT 1 FROM (select currval('auth_id_seq') as currval) t WHERE currval=1) THEN\n" +
-                    "        PERFORM nextval('auth_id_seq');" +
-                    "    END IF;\n" +*/
                     "END\n" +
                     "$$;\n");
             ResultSet rs = st.executeQuery("select * from character");
@@ -219,7 +223,6 @@ public class CharacterCollectionSQL extends CharacterCollection {
 
     }
 
-    @Override
     public synchronized DefaultCartoonPersonCharacter getCharacter(String id) {
         return characters.get(id);
     }
@@ -227,12 +230,12 @@ public class CharacterCollectionSQL extends CharacterCollection {
     PreparedStatement st_delete;
     PreparedStatement st_delete_s;
 
-    @Override
+
     public synchronized DefaultCartoonPersonCharacter deleteCharacter(String id, ServerExecutionModule exec) {
         if(exec.auth_data == null)
         {
             exec.error("Not authorized");
-            throw new NoRulesException();
+            throw new NoRootsException();
         }
         try {
             if(st_delete == null)st_delete = con.prepareStatement("DELETE FROM character Where string_id = ?");
@@ -242,8 +245,8 @@ public class CharacterCollectionSQL extends CharacterCollection {
             if(!rs.next())return null;
             if(!Objects.equals(exec.auth_data.name(), "admin") && rs.getInt("belongsto")!=exec.auth_data.id())
             {
-                exec.error("No rules to delete this character");
-                throw new NoRulesException();
+                exec.error("No roots to delete this character");
+                throw new NoRootsException();
             }
             st_delete.setString(1,id);
             st_delete.executeUpdate();
@@ -261,12 +264,12 @@ public class CharacterCollectionSQL extends CharacterCollection {
     PreparedStatement st_clear;
     PreparedStatement st_clear_person;
 
-    @Override
+
     public synchronized void clear(ServerExecutionModule exec) {
         if(exec.auth_data == null)
         {
             exec.error("Not authorized");
-            throw new NoRulesException();
+            throw new NoRootsException();
         }
         try {
             if (exec.auth_data.name() == "admin") {
@@ -289,7 +292,7 @@ public class CharacterCollectionSQL extends CharacterCollection {
         }
     }
 
-    @Override
+
     public String getInfo() {
         return "Class: " + this.getClass() + "\n"
                 + "Collection Type: " + characters.getClass() + "\n"
@@ -298,13 +301,13 @@ public class CharacterCollectionSQL extends CharacterCollection {
                 + "Initialization date: " + init_date;
     }
 
-    @Override
+
     public synchronized int size() {
         return characters.size();
     }
 
-    @Override
+
     public void save(ServerExecutionModule exec) {
         exec.warn("There is nothing to do");
-    }
+    }*/
 }

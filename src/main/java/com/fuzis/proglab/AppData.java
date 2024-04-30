@@ -3,28 +3,30 @@ package com.fuzis.proglab;
 import java.io.Serial;
 import java.io.Serializable;
 import java.net.InetAddress;
-import java.net.UnknownHostException;
-import java.util.HashMap;
 
 public class AppData {
     public static int PORT;
-    public static InetAddress ADRESS;
-
-
-    public enum TransferPurpose
+    public static InetAddress ADDRESS;
+    public enum MsgStatus
     {
-        Msg,
-        Cmd,
-        Return,
-        Auth
+        Successful,
+        Error
     }
-    public record TransferData(TransferPurpose purpose, String body, Integer code,HashMap<String,InteractiveCommandData> map) implements Serializable
+    public enum MsgPurpose
+    {
+        Cmd,
+        Response,
+        Update
+    }
+
+    public record MessageData(MsgStatus status, Object body,MsgPurpose purpose) implements Serializable
     {
         @Serial
         private static final long serialVersionUID = 1L;
     }
-    public record InteractiveCommandData(int[] args, String[] usage, String help) implements Serializable{
+    public record AuthData(int id, String name, String password) implements Serializable
+    {
         @Serial
-        private static final long serialVersionUID = 3L;
+        private static final long serialVersionUID = 123L;
     }
 }

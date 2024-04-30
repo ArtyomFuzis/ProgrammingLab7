@@ -2,43 +2,35 @@ package com.fuzis.proglab.Client;
 
 import com.fuzis.proglab.AppData;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.ObjectOutputStream;
-import java.net.InetAddress;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.InetSocketAddress;
+import java.net.Socket;
 import java.nio.channels.SocketChannel;
 
 public class ClientConnectionModule {
-    public static SocketChannel socket;
-    public static void warn(String info) {
-        System.out.println("[WARN] " + info);
-    }
-
-    public static void feedback(String info) {
-        System.out.println("[INFO] " + info);
-    }
-
-    public static void error(String info) {
-        System.out.println("[ERROR] " + info);
-    }
-
+    public static InputStream is;
+    public static OutputStream os;
+    public static ClientLogger log = ClientLogger.getInstance();
     public static boolean tryconnect() {
         try {
             InetSocketAddress addr;
             try {
-                 addr = new InetSocketAddress(AppData.ADRESS, AppData.PORT);
+                 addr = new InetSocketAddress(AppData.ADDRESS, AppData.PORT);
             }
             catch (IllegalArgumentException e)
             {
-                error("Invalid port, set to 4352");
-                addr = new InetSocketAddress(AppData.ADRESS, 4352);
+                log.error("Invalid port, set to 4352");
+                addr = new InetSocketAddress(AppData.ADDRESS, 4352);
             }
-            socket = SocketChannel.open(addr);
-            socket.configureBlocking(false);
+            Socket socket = new Socket();
+            socket.connect(addr);
+            is = socket.getInputStream();
+            os = socket.getOutputStream();
             return true;
         } catch (IOException ex) {
-            error("Connection error: " + ex.getLocalizedMessage());
+            log.error("Connection error: " + ex.getLocalizedMessage());
             return false;
         }
     }
@@ -52,7 +44,9 @@ public class ClientConnectionModule {
         }
         catch (InterruptedException ex)
         {
-            ClientExecutionModule.GoOutTheWindow();
+           log.error("Unexpected interrupt");
+           log.error(ex.getLocalizedMessage());
+           System.exit(1);
         }
     }
 }

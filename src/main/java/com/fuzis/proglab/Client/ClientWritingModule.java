@@ -1,41 +1,42 @@
 package com.fuzis.proglab.Client;
 
 import com.fuzis.proglab.AppData;
+import com.fuzis.proglab.Server.ServerConnectionModule;
+import com.fuzis.proglab.Server.ServerWritingModule;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.ObjectOutputStream;
+import java.io.*;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class ClientWritingModule {
-    public static void write(AppData.TransferData req)
+    ClientLogger logger = ClientLogger.getInstance();
+    public static ExecutorService executorService = Executors.newFixedThreadPool(3);
+    public static ObjectOutputStream oos;
+    public void write(AppData.MessageData req)
     {
-        try {
-            var ostr = new ByteArrayOutputStream(1000);
-            var os = new ObjectOutputStream(ostr);
-            os.writeObject(req);
-            var data = ByteBuffer.wrap(ostr.toByteArray());
-            final int b_size = 200;
-
-            for(int i = data.limit(); i > 0; i-=b_size)
-            {
-                var arr = new byte[Math.min(b_size,i)+2];
-                for(int j = 2 ; j <=Math.min(b_size,i)+1;j++) {
-                    arr[j] = data.get();
-                }
-                arr[0]=1;
-                arr[1]=(byte)Math.min(b_size,i);
-                ClientConnectionModule.socket.write(ByteBuffer.wrap(arr));
+        if (oos == null) {
+            try {
+                oos = new ObjectOutputStream(ClientConnectionModule.os);
+            } catch (IOException e) {
+                logger.error("Can't be written");
+                logger.error(e.getMessage());
             }
-            ClientConnectionModule.socket.write(ByteBuffer.wrap(new byte[]{2}));
-
         }
-        catch (IOException ex)
-        {
-            ClientConnectionModule.error("Connection writing error: " + ex.getLocalizedMessage());
-            ClientConnectionModule.connect();
-            write(req);
+        Runnable run = ()->{inner_write(req);};
+        executorService.submit(run);
+    }
+    public synchronized void inner_write(AppData.MessageData req) {
+        try {
+            synchronized (oos) {
+                oos.writeObject(req);
+            }
+        } catch (Exception e) {
+            logger.error("Can't be written");
+            logger.error(e.getMessage());
         }
     }
 }
