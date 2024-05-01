@@ -7,6 +7,7 @@
 package com.fuzis.proglab.Server;
 
 import com.fuzis.proglab.AppData;
+import com.fuzis.proglab.Server.Collection.CharacterCollectionSQL;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -28,6 +29,14 @@ public class ServerMain {
             System.exit(1);
         }
         var state_machine = StateMachine.get_instance();
+        CharacterCollectionSQL.getInstance().load();
+        if(state_machine.get(ServerData.admin_id) != null)
+        {
+            logger.error("Unable to register the administrator");
+            System.exit(1);
+        }
+        state_machine.addAdmin();
+        ServerConsole.start_console();
         while (true) {
             ServerConnectionModule con = new ServerConnectionModule();
             if (!con.tryconnect()) {

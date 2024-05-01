@@ -9,8 +9,7 @@ public class ClientExecutionModule {
     {
         read_module = new ClientReadingModule();
         write_module = new ClientWritingModule();
-        write_module.write(new AppData.MessageData(AppData.MsgStatus.Successful,"Hello", AppData.MsgPurpose.Response));
-        write_module.write(new AppData.MessageData(AppData.MsgStatus.Successful,"Hello2", AppData.MsgPurpose.Response));
-        write_module.write(new AppData.MessageData(AppData.MsgStatus.Successful,"Hello3", AppData.MsgPurpose.Response));
+        write_module.write(new AppData.MessageData(AppData.MsgStatus.Successful,new AppData.Command(AppData.CmdType.auth,new Object[]{"admin",""}), AppData.MsgPurpose.Cmd));
+        System.out.println(read_module.read());
     }
 }

@@ -5,27 +5,42 @@ import java.io.Serializable;
 import java.net.InetAddress;
 
 public class AppData {
+    public static final String salt = "ロシア語？`ёавыаэб.hu9u0gjbhteo;iboh;itesr455453";
+
     public static int PORT;
     public static InetAddress ADDRESS;
-    public enum MsgStatus
-    {
+
+    public enum MsgStatus {
         Successful,
         Error
     }
-    public enum MsgPurpose
-    {
+
+    public enum MsgPurpose {
         Cmd,
         Response,
         Update
     }
 
-    public record MessageData(MsgStatus status, Object body,MsgPurpose purpose) implements Serializable
-    {
+    public record Command(CmdType type, Object[] args) implements Serializable {
+        @Serial
+        private static final long serialVersionUID = 522L;
+    }
+
+    public enum CmdType {
+        add,
+        auth,
+        getCollectionInfo,
+        getAll,
+        clear,
+        remove,
+    }
+
+    public record MessageData(MsgStatus status, Object body, MsgPurpose purpose) implements Serializable {
         @Serial
         private static final long serialVersionUID = 1L;
     }
-    public record AuthData(int id, String name, String password) implements Serializable
-    {
+
+    public record AuthData(int id, String name, String password) implements Serializable {
         @Serial
         private static final long serialVersionUID = 123L;
     }

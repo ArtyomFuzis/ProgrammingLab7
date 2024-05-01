@@ -7,7 +7,6 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 
@@ -18,7 +17,7 @@ public class StateMachine
     {
         private final int id;
         private final ServerConnectionModule con;
-        private final AppData.AuthData auth;
+        private AppData.AuthData auth;
         private final ObjectOutputStream oos;
         private final ObjectInputStream ois;
         public ConState (int _id,ServerConnectionModule _con, AppData.AuthData _auth)
@@ -26,6 +25,12 @@ public class StateMachine
             id = _id;
             con = _con;
             auth = _auth;
+            if(con==null)
+            {
+                oos = null;
+                ois = null;
+                return;
+            }
             try {
                 oos = new ObjectOutputStream(con.os);
                 ois = new ObjectInputStream(con.is);
@@ -36,14 +41,21 @@ public class StateMachine
                 throw new RuntimeException(e);
             }
         }
-
+        public AppData.AuthData getAuth ()
+        {
+            return auth;
+        }
+        public void setAuth(AppData.AuthData _auth)
+        {
+            auth = _auth;
+        }
         public void write(AppData.MessageData msg)
         {
             ServerWritingModule.write(msg,oos,id);
         }
         public void read()
         {
-            ServerReadingModule.read(ois,ServerExecutionModule::request_handle,id);
+            ServerReadingModule.read(ois,ServerExecutionModule::requestHandle,id);
         }
     }
     static private StateMachine _instance;
@@ -71,8 +83,15 @@ public class StateMachine
     int id_cnt = 1;
     public synchronized ConState add(ServerConnectionModule con, AppData.AuthData auth)
     {
+        if(id_cnt == ServerData.admin_id) id_cnt++;
         var obj_add = new ConState(id_cnt,con,auth);
         storage.put(id_cnt++,obj_add);
+        return obj_add;
+    }
+    public ConState addAdmin()
+    {
+        var obj_add = new ConState(ServerData.admin_id,null,new AppData.AuthData(1,"admin",""));
+        storage.put(ServerData.admin_id,obj_add);
         return obj_add;
     }
 }

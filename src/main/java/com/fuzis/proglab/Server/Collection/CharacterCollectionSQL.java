@@ -7,8 +7,10 @@ import com.fuzis.proglab.Enums.Popularity;
 import com.fuzis.proglab.Enums.Sex;
 import com.fuzis.proglab.Exception.DataBaseConnectionFailedException;
 import com.fuzis.proglab.Exception.NoRootsException;
+import com.fuzis.proglab.Server.ServerData;
 import com.fuzis.proglab.Server.ServerExecutionModule;
 import com.fuzis.proglab.Server.ServerMain;
+import com.fuzis.proglab.Server.StateMachine;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -20,7 +22,7 @@ import java.util.*;
 import java.util.Date;
 
 public class CharacterCollectionSQL {
-    /*public static final Logger logger = LoggerFactory.getLogger(CharacterCollectionSQL.class);
+    public static final Logger logger = LoggerFactory.getLogger(CharacterCollectionSQL.class);
     public static Connection con;
     private static HashMap<String, DefaultCartoonPersonCharacter> characters;
 
@@ -49,14 +51,15 @@ public class CharacterCollectionSQL {
         return a.toString();
     }
 
-    public synchronized void add(String id, DefaultCartoonPersonCharacter charac) {
-        if(exec.auth_data == null)
+    public synchronized void add(String id, DefaultCartoonPersonCharacter charac,int state_id) {
+        var state = StateMachine.get_instance().get(state_id);
+        if(state.getAuth() == null)
         {
             logger.error("Not authorized");
             throw new NoRootsException();
         }
         try {
-            AppData.AuthData authData = exec.auth_data;
+            AppData.AuthData authData = state.getAuth();
             if (st_add1 == null)
                 st_add1 = con.prepareStatement("insert into character (string_id,name,sex,quote,height,weight,popularity,age,description,health,isanimecharacter,belongsto) VALUES (?,?,?::\"sex_1\",?,?,?,?::\"popularity_1\",?,?,?,?,?);");
             if (st_add2 == null)
@@ -104,7 +107,7 @@ public class CharacterCollectionSQL {
             }
             characters.put(id, charac);
         } catch (SQLException e) {
-            exec.error(e.getMessage());
+            logger.error(e.getMessage());
             e.printStackTrace();
         }
 
@@ -114,10 +117,10 @@ public class CharacterCollectionSQL {
         characters = new HashMap<>();
         Properties db_prop = new Properties();
         try {
-            db_prop.load(Files.newInputStream(Paths.get("db.properties")));
+            db_prop.load(Files.newInputStream(Paths.get(ServerData.database_properties_filename)));
         } catch (IOException e) {
             //throw new DataBaseConnectionFailedException("db.properties not found or could not be loaded");
-            System.out.println("ERROR: NO db.properties file");
+            System.out.println("ERROR: NO database properties file");
             System.exit(1);
         }
         String DB_URL = db_prop.getProperty("DB_URL");
@@ -231,10 +234,11 @@ public class CharacterCollectionSQL {
     PreparedStatement st_delete_s;
 
 
-    public synchronized DefaultCartoonPersonCharacter deleteCharacter(String id, ServerExecutionModule exec) {
-        if(exec.auth_data == null)
+    public synchronized DefaultCartoonPersonCharacter deleteCharacter(String id,int state_id) {
+        var state = StateMachine.get_instance().get(state_id);
+        if(state.getAuth() == null)
         {
-            exec.error("Not authorized");
+            logger.error("Not authorized");
             throw new NoRootsException();
         }
         try {
@@ -243,9 +247,9 @@ public class CharacterCollectionSQL {
             st_delete_s.setString(1, id);
             ResultSet rs =  st_delete_s.executeQuery();
             if(!rs.next())return null;
-            if(!Objects.equals(exec.auth_data.name(), "admin") && rs.getInt("belongsto")!=exec.auth_data.id())
+            if(!Objects.equals(state.getAuth().name(), "admin") && rs.getInt("belongsto")!=state.getAuth().id())
             {
-                exec.error("No roots to delete this character");
+                logger.error("No roots to delete this character");
                 throw new NoRootsException();
             }
             st_delete.setString(1,id);
@@ -255,7 +259,7 @@ public class CharacterCollectionSQL {
             return charac;
 
         } catch (SQLException e) {
-            exec.error(e.getMessage());
+            logger.error(e.getMessage());
             e.printStackTrace();
             return null;
         }
@@ -265,29 +269,30 @@ public class CharacterCollectionSQL {
     PreparedStatement st_clear_person;
 
 
-    public synchronized void clear(ServerExecutionModule exec) {
-        if(exec.auth_data == null)
+    public synchronized void clear(int state_id) {
+        var state = StateMachine.get_instance().get(state_id);
+        if(state.getAuth() == null)
         {
-            exec.error("Not authorized");
+            logger.error("Not authorized");
             throw new NoRootsException();
         }
         try {
-            if (exec.auth_data.name() == "admin") {
+            if (state.getAuth().name() == "admin") {
 
                 if (st_clear == null)
                     st_clear = con.prepareStatement("DELETE FROM character;");
-                exec.feedback("Deleted: " + st_clear.executeUpdate() + " characters");
+                logger.info("Deleted: " + st_clear.executeUpdate() + " characters");
                 characters.clear();
 
             } else {
                 if (st_clear_person == null)
                     st_clear_person = con.prepareStatement("DELETE FROM character WHERE belongsto = ?;");
-                st_clear_person.setInt(1, exec.auth_data.id());
-                exec.feedback("Deleted: " + st_clear_person.executeUpdate() + " characters");
+                st_clear_person.setInt(1, state.getAuth().id());
+                logger.info("Deleted: " + st_clear_person.executeUpdate() + " characters");
                 load();
             }
         } catch (SQLException e) {
-            exec.error(e.getMessage());
+            logger.error(e.getMessage());
             e.printStackTrace();
         }
     }
@@ -305,9 +310,4 @@ public class CharacterCollectionSQL {
     public synchronized int size() {
         return characters.size();
     }
-
-
-    public void save(ServerExecutionModule exec) {
-        exec.warn("There is nothing to do");
-    }*/
 }
