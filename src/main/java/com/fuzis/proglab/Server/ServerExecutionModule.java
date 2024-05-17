@@ -17,8 +17,9 @@ import java.util.concurrent.Executors;
 public class ServerExecutionModule {
     public static final Logger logger = LoggerFactory.getLogger(ServerExecutionModule.class);
     public static ExecutorService executorService = Executors.newCachedThreadPool();
-    public static void auth(String user,String pass,int id )
+    public static void auth(Integer msg_id, String user,String pass,int id )
     {
+        System.out.println(user+" "+ pass);
         var state = StateMachine.get_instance().get(id);
         var con  = CharacterCollectionSQL.con;
         try {
@@ -30,10 +31,10 @@ public class ServerExecutionModule {
             {
                 state.setAuth(new AppData.AuthData(rs.getInt("id"),user,pass));
                 logger.info("id: {} Successfully logged in: {} {}",id,user,pass);
-                state.write(new AppData.MessageData(AppData.MsgStatus.Successful,null, AppData.MsgPurpose.Response) );
+                state.write(new AppData.MessageData(AppData.MsgStatus.Successful,msg_id,null, AppData.MsgPurpose.Response) );
 
             }
-            else state.write(new AppData.MessageData(AppData.MsgStatus.Error,null, AppData.MsgPurpose.Response) );
+            else state.write(new AppData.MessageData(AppData.MsgStatus.Error,msg_id,null, AppData.MsgPurpose.Response) );
 
         }
         catch (SQLException e)
@@ -54,24 +55,24 @@ public class ServerExecutionModule {
             {
                 case add:
                     collection.add((String) cmd_args[0], (DefaultCartoonPersonCharacter) cmd_args[1], id);
-                    state.write(new AppData.MessageData(AppData.MsgStatus.Successful,null, AppData.MsgPurpose.Response) );
+                    state.write(new AppData.MessageData(AppData.MsgStatus.Successful,msg.id(),null, AppData.MsgPurpose.Response) );
                     break;
                 case remove:
                     collection.deleteCharacter((String) cmd_args[0],id);
-                    state.write(new AppData.MessageData(AppData.MsgStatus.Successful,null, AppData.MsgPurpose.Response) );
+                    state.write(new AppData.MessageData(AppData.MsgStatus.Successful,msg.id(),null, AppData.MsgPurpose.Response) );
                     break;
                 case clear:
                     collection.clear(id);
-                    state.write(new AppData.MessageData(AppData.MsgStatus.Successful,null, AppData.MsgPurpose.Response) );
+                    state.write(new AppData.MessageData(AppData.MsgStatus.Successful,msg.id(),null, AppData.MsgPurpose.Response) );
                     break;
                 case getCollectionInfo:
-                    state.write(new AppData.MessageData(AppData.MsgStatus.Successful,collection.getInfo(), AppData.MsgPurpose.Response) );
+                    state.write(new AppData.MessageData(AppData.MsgStatus.Successful,msg.id(),collection.getInfo(), AppData.MsgPurpose.Response) );
                     break;
                 case getAll:
-                    state.write(new AppData.MessageData(AppData.MsgStatus.Successful,collection.getCharacters(), AppData.MsgPurpose.Response) );
+                    state.write(new AppData.MessageData(AppData.MsgStatus.Successful,msg.id(),collection.getCharacters(), AppData.MsgPurpose.Response) );
                     break;
                 case auth:
-                    auth((String)cmd_args[0],(String)cmd_args[1],id);
+                    auth(msg.id(),(String)cmd_args[0],(String)cmd_args[1],id);
                     break;
             }
 
@@ -79,11 +80,11 @@ public class ServerExecutionModule {
         catch (ClassCastException e)
         {
             logger.error("id: {} Command message body is corrupted: {}", id, e.toString());
-            state.write(new AppData.MessageData(AppData.MsgStatus.Error,e, AppData.MsgPurpose.Response));
+            state.write(new AppData.MessageData(AppData.MsgStatus.Error,msg.id(),e, AppData.MsgPurpose.Response));
         }
         catch (NoRootsException e)
         {
-            state.write(new AppData.MessageData(AppData.MsgStatus.Error,e, AppData.MsgPurpose.Response));
+            state.write(new AppData.MessageData(AppData.MsgStatus.Error,msg.id(),e, AppData.MsgPurpose.Response));
         }
     }
     public static void handle(AppData.MessageData msg, int id)
@@ -104,7 +105,9 @@ public class ServerExecutionModule {
     }
     public static void requestHandle(AppData.MessageData msg, int id)
     {
-        logger.info(msg.toString());
+        var state = StateMachine.get_instance().get(id);
+        logger.info(id + ": " + msg.toString());
         executorService.submit(()->handle(msg, id));
+        state.read();
     }
 }

@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.*?>
+
+<AnchorPane fx:id="root" prefHeight="400.0" prefWidth="600.0" stylesheets="@main.css" xmlns="http://javafx.com/javafx/17.0.2-ea" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.fuzis.proglab.GUI.Main">
+   <children>
+      <VBox fx:id="main_box" prefHeight="200.0" prefWidth="100.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+         <children>
+            <HBox prefHeight="50.0" prefWidth="200.0">
+               <children>
+                  <Pane fx:id="head_pane" minWidth="200.0" prefHeight="200.0" prefWidth="200.0" styleClass="menu_pane">
+                     <children>
+                        <Label fx:id="lbl_head" text="%main.head">
+                           <font>
+                              <Font size="16.0" />
+                           </font>
+                        </Label>
+                     </children></Pane>
+                  <Pane prefHeight="200.0" prefWidth="200.0" styleClass="menu_pane" HBox.hgrow="ALWAYS" />
+                  <HBox minWidth="150.0" prefHeight="100.0" prefWidth="150.0" styleClass="menu_pane">
+                     <children>
+                        <Button fx:id="btn_home" mnemonicParsing="false" onAction="#home" prefHeight="50.0" prefWidth="50.0" styleClass="menu_btn">
+                           <cursor>
+                              <Cursor fx:constant="HAND" />
+                           </cursor></Button>
+                        <Button fx:id="btn_locale" mnemonicParsing="false" onAction="#language" prefHeight="50.0" prefWidth="50.0" styleClass="menu_btn">
+                           <cursor>
+                              <Cursor fx:constant="HAND" />
+                           </cursor></Button>
+                        <Button fx:id="btn_account" mnemonicParsing="false" onAction="#account" prefHeight="50.0" prefWidth="50.0" styleClass="menu_btn">
+                           <cursor>
+                              <Cursor fx:constant="HAND" />
+                           </cursor></Button>
+                     </children>
+                  </HBox>
+               </children>
+            </HBox>
+         </children>
+      </VBox>
+   </children>
+</AnchorPane>

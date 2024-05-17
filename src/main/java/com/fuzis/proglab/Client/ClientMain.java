@@ -1,12 +1,21 @@
 package com.fuzis.proglab.Client;
 
 import com.fuzis.proglab.AppData;
+import com.fuzis.proglab.GUI.GuiApp;
+import javafx.application.Application;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
+import javafx.scene.layout.*;
+import javafx.stage.Stage;
 
+import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.ResourceBundle;
 
 
-public class ClientMain {
+public class ClientMain  {
     static ClientLogger logger = ClientLogger.getInstance();
     public static void main(String[] args) {
         try {
@@ -33,6 +42,16 @@ public class ClientMain {
         }
         ClientConnectionModule.connect();
         ClientExecutionModule.start();
+        GuiApp.outer_start(args);
+        /*System.out.println(ClientExecutionModule.request_auth("just_man","123"));
+        System.out.println(ClientExecutionModule.request_auth("just_man","567"));
+        System.out.println(ClientExecutionModule.request_auth("just_man","7575"));
+        System.out.println(ClientExecutionModule.request_auth("just_man","5757575"));
+        System.out.println(ClientExecutionModule.request_auth("just_man","hjngjh"));
+        System.out.println(ClientExecutionModule.request_auth("just_man","55"));
+        System.out.println(ClientExecutionModule.request_auth("just_man","sus"));*/
+
+
     }
 
 }

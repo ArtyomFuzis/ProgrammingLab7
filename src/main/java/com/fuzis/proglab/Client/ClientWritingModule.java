@@ -16,27 +16,66 @@ public class ClientWritingModule {
     ClientLogger logger = ClientLogger.getInstance();
     public static ExecutorService executorService = Executors.newFixedThreadPool(3);
     public static ObjectOutputStream oos;
-    public void write(AppData.MessageData req)
-    {
+
+    public void write(AppData.MessageData req) {
         if (oos == null) {
-            try {
-                oos = new ObjectOutputStream(ClientConnectionModule.os);
-            } catch (IOException e) {
-                logger.error("Can't be written");
-                logger.error(e.getMessage());
+            boolean first_notify = true;
+            while (true) {
+                try {
+                    oos = new ObjectOutputStream(ClientConnectionModule.os);
+                    break;
+                } catch (IOException e) {
+                    if (first_notify) {
+                        logger.error("Connection problem: writing");
+                        logger.error(e.getMessage());
+                        first_notify = false;
+                    }
+                    try {
+                        Thread.sleep(1000);
+                    }
+                    catch (InterruptedException ex)
+                    {
+                        logger.error("Interrupt:" + ex.getMessage());
+                    }
+                }
             }
         }
-        Runnable run = ()->{inner_write(req);};
+
+        Runnable run = () -> {
+            inner_write(req);
+        };
         executorService.submit(run);
     }
+
     public synchronized void inner_write(AppData.MessageData req) {
-        try {
-            synchronized (oos) {
-                oos.writeObject(req);
+        boolean first_notify = true;
+        while (true) {
+            try {
+                synchronized (oos) {
+                    oos.writeObject(req);
+                }
+                break;
+            } catch (IOException e) {
+                while (true) {
+                    try {
+                        oos = new ObjectOutputStream(ClientConnectionModule.os);
+                        break;
+                    } catch (IOException e2) {
+                        if (first_notify) {
+                            logger.error("Connection problem: writing");
+                            logger.error(e.getMessage());
+                            first_notify = false;
+                        }
+                        try {
+                            Thread.sleep(1000);
+                        }
+                        catch (InterruptedException ex)
+                        {
+                            logger.error("Interrupt:" + ex.getMessage());
+                        }
+                    }
+                }
             }
-        } catch (Exception e) {
-            logger.error("Can't be written");
-            logger.error(e.getMessage());
         }
     }
 }

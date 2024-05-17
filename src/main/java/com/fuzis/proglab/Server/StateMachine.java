@@ -84,9 +84,16 @@ public class StateMachine
     public synchronized ConState add(ServerConnectionModule con, AppData.AuthData auth)
     {
         if(id_cnt == ServerData.admin_id) id_cnt++;
-        var obj_add = new ConState(id_cnt,con,auth);
-        storage.put(id_cnt++,obj_add);
-        return obj_add;
+        try {
+            var obj_add = new ConState(id_cnt, con, auth);
+            storage.put(id_cnt++,obj_add);
+            return obj_add;
+        }
+        catch(Exception e)
+        {
+            return null;
+        }
+
     }
     public ConState addAdmin()
     {

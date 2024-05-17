@@ -12,40 +12,55 @@ import java.nio.channels.Selector;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Set;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.RecursiveTask;
+import java.util.function.Consumer;
 
 public class ClientReadingModule {
     public static ClientLogger logger = ClientLogger.getInstance();
     public static ObjectInputStream ois;
-    public static ForkJoinPool executorService = new ForkJoinPool();
-    public AppData.MessageData read() {
+    public static void start_reading(Consumer<AppData.MessageData> callback) {
         if (ois == null) {
-            try {
-                ois = new ObjectInputStream(ClientConnectionModule.is);
-            } catch (IOException e) {
-                logger.error("Can't be read");
-                logger.error(e.getMessage());
-                return null;
+            while (true) {
+                try {
+                    ois = new ObjectInputStream(ClientConnectionModule.is);
+                    break;
+                } catch (IOException e) {
+                    logger.error("Connection problem");
+                    logger.error(e.getMessage());
+                    ClientConnectionModule.connect();
+                }
             }
         }
-        RecursiveTask<AppData.MessageData> act = new RecursiveTask<AppData.MessageData>() {
-            @Override
-            protected AppData.MessageData compute() {
-                return inner_read();
-            }
-        };
-        executorService.submit(act);
-        return act.join();
+        Thread thr = new Thread(() -> {inner_read(callback);});
+        thr.setDaemon(true);
+        thr.start();
     }
-
-    public AppData.MessageData inner_read() {
-        try {
-            return (AppData.MessageData) ois.readObject();
-        } catch (IOException | ClassNotFoundException e) {
-            logger.error("Can't be read");
-            logger.error(e.getMessage());
+    public static void inner_read(Consumer<AppData.MessageData> callback)
+    {
+        while(true) {
+            while (true) {
+                try {
+                    callback.accept((AppData.MessageData) ois.readObject());
+                    break;
+                } catch (IOException | ClassNotFoundException e) {
+                    logger.error("Connection problem");
+                    logger.error(e.getMessage());
+                    ClientConnectionModule.connect();
+                    while (true) {
+                        try {
+                            ois = new ObjectInputStream(ClientConnectionModule.is);
+                            break;
+                        } catch (IOException e2) {
+                            logger.error("Connection problem");
+                            logger.error(e.getMessage());
+                            ClientConnectionModule.connect();
+                        }
+                    }
+                }
+            }
         }
-        return null;
     }
 }

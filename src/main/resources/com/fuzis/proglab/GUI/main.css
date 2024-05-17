@@ -1,0 +1,112 @@
+.page_head
+{
+    -fx-text-fill: black;
+    -fx-font-size: 20px;
+}
+.fld
+{
+    -fx-text-fill: black;
+    -fx-font-size: 14px;
+    -fx-background-color: white;
+    -fx-background-radius: 50px;
+    -fx-border-radius: 50px;
+    -fx-border-width: 1px;
+    -fx-border-color: #9CF99C;
+    -fx-prompt-text-fill:  #7CCFC9;
+}
+.submit_btn
+{
+    -fx-font-size: 20px;
+    -fx-padding: 0;
+}
+.submit_btn:focused
+{
+    -fx-border-color: #5FD2B5;
+}
+.main_back
+{
+    -fx-background-radius: 50px;
+    -fx-border-width: 2px;
+    -fx-border-radius: 50px;
+}
+.add_padding
+{
+    -fx-padding: 7 10 7 10 ; /* t r b l */
+}
+.ctrl
+{
+    -fx-background-color: #9CF99C;
+    -fx-border-color: white;
+}
+.ctrl2
+{
+    -fx-background-color: #5FD2B5;
+    -fx-border-color: white;
+}
+.ctrl3
+{
+    -fx-background-color: #EBF270;
+    -fx-border-color: white;
+}
+#root
+{
+     -fx-background-color: #333333;
+
+}
+.menu_pane
+{
+    -fx-background-color: #5FD2B5;
+    -fx-border-width: 0 0 2 0  ;
+    -fx-border-color: white;
+}
+#btn_account
+{
+    -fx-background-image: url("account2.png");
+}
+#btn_locale
+{
+    -fx-background-image: url("language.png");
+}
+#btn_home
+{
+    -fx-background-image: url("home.png");
+}
+.menu_btn
+{
+
+    -fx-background-size: 50 50;
+    -fx-background-color: transparent;
+    -fx-background-position: center center;
+    -fx-background-repeat: stretch;
+    -fx-border-width: 2px;
+    -fx-border-radius: 5px;
+}
+.menu_btn:focused
+{
+    -fx-border-color: #EBF270;
+
+}
+#lbl_head
+{
+    -fx-font-size: 25px;
+}
+#head_pane
+{
+
+}
+.check
+{
+    -fx-font-size: 17px;
+}
+#lbl_feedback_head_auth
+{
+    -fx-font-size: 40px;
+    -fx-text-fill:  darkred;
+    -fx-text-alignment: center;
+
+}
+#lbl_feedback_body_auth
+{
+    -fx-font-size: 20px;
+    -fx-text-fill:  darkblue;
+}

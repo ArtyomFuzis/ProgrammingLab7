@@ -1,6 +1,5 @@
 package com.fuzis.proglab.Server;
 
-import com.fuzis.proglab.Annotations.HiddenCommand;
 import com.fuzis.proglab.Annotations.InteractiveCommand;
 import com.fuzis.proglab.AppData;
 import com.fuzis.proglab.Enums.Opinion;
@@ -71,7 +70,6 @@ public class ServerConsole {
         }
 
 
-        @HiddenCommand
         @InteractiveCommand(args = {0, 1}, usage = {"help - вывод справки по всем командам", "help <команда> - вывод справки по определенной команде"}, help = "Выводит справку по командам интерактивного режима")
         public void help(List<String> argc) {
             if (argc.isEmpty()) {
@@ -178,7 +176,6 @@ public class ServerConsole {
             }
         }
 
-        @HiddenCommand
         @InteractiveCommand(args = {0}, usage = {"exit - завершить работу интерактивного режима"}, help = "Осуществляет выход из программы/подпрограммы")
         public void exit(List<String> argc) {
             logger.info("Shutting down...");
@@ -294,7 +291,6 @@ public class ServerConsole {
             }
         }
 
-        @HiddenCommand
         @InteractiveCommand(args = {2}, usage = {"register <пользователь> <пароль> - добавить пользователя с указанным именем и паролем"}, help = "Регистрация нового пользователя")
         public void register(List<String> argc) {
             try {
@@ -319,6 +315,31 @@ public class ServerConsole {
                 }
             } catch (NoSuchAlgorithmException ex) {
                 logger.error("Такого алгоритма нет.... WHAT?!");
+            } catch (SQLException e) {
+                logger.error(e.getMessage());
+                e.printStackTrace();
+            }
+
+        }
+        @InteractiveCommand(args = {1}, usage = {"delete_user <пользователь> - удаляет пользователя с указанным именем"}, help = "Удаление пользователя")
+        public void delete_user(List<String> argc) {
+            try {
+                String user = argc.get(0);
+                PreparedStatement st = CharacterCollectionSQL.con.prepareStatement("DELETE FROM auth WHERE username=?");
+                st.setString(1, user);
+                try {
+                    int res = st.executeUpdate();
+                    if(res == 0)logger.warn("No such user");
+                    else logger.info("Successful deletion");
+                } catch (SQLException e) {
+                    try {
+                        var res = st.executeUpdate();
+                        if(res == 0)logger.warn("No such user");
+                        else logger.info("Successful deletion");
+                    } catch (SQLException e2) {
+                        logger.error("User with this id already exists");
+                    }
+                }
             } catch (SQLException e) {
                 logger.error(e.getMessage());
                 e.printStackTrace();

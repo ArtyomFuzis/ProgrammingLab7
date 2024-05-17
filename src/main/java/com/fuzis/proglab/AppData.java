@@ -35,7 +35,7 @@ public class AppData {
         remove,
     }
 
-    public record MessageData(MsgStatus status, Object body, MsgPurpose purpose) implements Serializable {
+    public record MessageData(MsgStatus status, Integer id, Object body, MsgPurpose purpose) implements Serializable {
         @Serial
         private static final long serialVersionUID = 1L;
     }

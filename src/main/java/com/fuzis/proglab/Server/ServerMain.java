@@ -44,7 +44,11 @@ public class ServerMain {
                 System.exit(1);
             }
             var state = state_machine.add(con, null);
-            state.read();
+            if(state==null)
+            {
+                logger.error("Unable to make a connection");
+            }
+            else state.read();
         }
 
     }
