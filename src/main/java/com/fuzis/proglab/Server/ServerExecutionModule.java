@@ -11,6 +11,7 @@ import org.slf4j.LoggerFactory;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -56,23 +57,33 @@ public class ServerExecutionModule {
                 case add:
                     collection.add((String) cmd_args[0], (DefaultCartoonPersonCharacter) cmd_args[1], id);
                     state.write(new AppData.MessageData(AppData.MsgStatus.Successful,msg.id(),null, AppData.MsgPurpose.Response) );
+                    StateMachine.get_instance().update(new Object[]{AppData.UpdateType.Add,cmd_args[1]});
                     break;
                 case remove:
                     collection.deleteCharacter((String) cmd_args[0],id);
                     state.write(new AppData.MessageData(AppData.MsgStatus.Successful,msg.id(),null, AppData.MsgPurpose.Response) );
+                    StateMachine.get_instance().update(new Object[]{AppData.UpdateType.Remove,cmd_args[0]});
                     break;
                 case clear:
                     collection.clear(id);
                     state.write(new AppData.MessageData(AppData.MsgStatus.Successful,msg.id(),null, AppData.MsgPurpose.Response) );
+                    StateMachine.get_instance().update(new Object[]{AppData.UpdateType.Update,state.getAuth().id()});
                     break;
                 case getCollectionInfo:
                     state.write(new AppData.MessageData(AppData.MsgStatus.Successful,msg.id(),collection.getInfo(), AppData.MsgPurpose.Response) );
                     break;
                 case getAll:
-                    state.write(new AppData.MessageData(AppData.MsgStatus.Successful,msg.id(),collection.getCharacters(), AppData.MsgPurpose.Response) );
+                    ArrayList<DefaultCartoonPersonCharacter> arr = new ArrayList<>(collection.getCharacters().values());
+                    state.write(new AppData.MessageData(AppData.MsgStatus.Successful,msg.id(),arr, AppData.MsgPurpose.Response) );
                     break;
                 case auth:
                     auth(msg.id(),(String)cmd_args[0],(String)cmd_args[1],id);
+                    break;
+                case update:
+                    collection.deleteCharacter((String) cmd_args[0],id);
+                    collection.add((String) cmd_args[0], (DefaultCartoonPersonCharacter) cmd_args[1], id);
+                    state.write(new AppData.MessageData(AppData.MsgStatus.Successful,msg.id(),null, AppData.MsgPurpose.Response) );
+                    StateMachine.get_instance().update(new Object[]{AppData.UpdateType.Update,cmd_args[1]});
                     break;
             }
 

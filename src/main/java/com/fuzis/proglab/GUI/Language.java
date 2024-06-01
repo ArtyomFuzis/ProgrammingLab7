@@ -11,8 +11,6 @@ import java.util.ResourceBundle;
 
 public class Language {
     @FXML
-    private ResourceBundle resources;
-    @FXML
     private ToggleGroup lang;
     @FXML
     private RadioButton toggle_ru;

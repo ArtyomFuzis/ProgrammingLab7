@@ -127,7 +127,7 @@ public class ServerConsole {
             Boolean isAnimeCharacter = inp.isAnimeCharacter_interactive();
             List<String> additionalNames = inp.additionalnames_interactive();
             HashMap<String, Opinion> opinions = inp.opinions_interactive();
-            return new Cmds.IDCharacter(id, new DefaultCartoonPersonCharacter(name, sex, quote, opinions, additionalNames, height, weight, isAnimeCharacter, popul, description, age, health));
+            return new Cmds.IDCharacter(id, new DefaultCartoonPersonCharacter(id, name, sex, quote, opinions, additionalNames, height, weight, isAnimeCharacter, popul, description, age, health));
         }
 
         @InteractiveCommand(args = {0}, usage = {"add - добавление персонажа в коллекцию, значение вводится построчно:", "<id> - строка-индификатор", "<name> - имя", "<sex> пол персонажа, элемент из перечисления Sex", "<quote> - строка, цитата персонажа", "<height> - рост персонажа", "<weight> - вес персонажа", "<popularity> - популярность персонажа, элемент из перечисления Popularity", "<description> - строка, описание персонажа", "<age> - возраст персонажа", "<health> - значение здоровья персонажа в целочисленных условных единицах", "<isAnimeCharacter> - является ли アニメ персонажем, значение Yes/No", "<additionalNames> - строка, дополнительные имена персонажа, перечисление через запятую", "<opinions> - мнения о других персонажах (не обязательно из коллекции) в виде <имя>:<отношение>, <имя2>:<отношение2>... отношение - значение из перечисления Opinion"}, help = "Производит добавления элемента в коллекцию")
@@ -136,6 +136,8 @@ public class ServerConsole {
             if (new_charac == null) return;
             char_col.add(new_charac.id, new_charac.character, ServerData.admin_id);
             logger.info("Successful add");
+            StateMachine.get_instance().update(new Object[]{AppData.UpdateType.Add,new_charac.character});
+
         }
 
         @InteractiveCommand(args = {1}, usage = {"update <id>- изменение персонажа, содержащегося в коллекции, можно изменять конкретные поля, в остальных останутся предыдущие значения, end - для выхода", "<name> - имя", "<sex> пол персонажа, элемент из перечисления Sex", "<quote> - строка, цитата персонажа", "<height> - рост персонажа", "<weight> - вес персонажа", "<popularity> - популярность персонажа, элемент из перечисления Popularity", "<description> - строка, описание персонажа", "<age> - возраст персонажа", "<health> - значение здоровья персонажа в целочисленных условных единицах", "<isAnimeCharacter> - является ли アニメ персонажем, значение Yes/No", "<additionalNames> - строка, дополнительные имена персонажа, перечисление через запятую", "<opinions> - мнения о других персонажах (не обязательно из коллекции) в виде <имя>:<отношение>, <имя2>:<отношение2>... отношение - значение из перечисления Opinion"}, help = "Изменяет элемент в коллекции")
@@ -169,6 +171,7 @@ public class ServerConsole {
                         char_col.deleteCharacter(id, ServerData.admin_id);
                         char_col.add(id, charac, ServerData.admin_id);
                         logger.info("End update");
+                        StateMachine.get_instance().update(new Object[]{AppData.UpdateType.Update,charac});
                         return;
                     }
                     default -> logger.error("Field not found!!!");
@@ -186,12 +189,16 @@ public class ServerConsole {
         public void clear(List<String> argc) {
             char_col.clear(ServerData.admin_id);
             logger.info("Successful clearing");
+            StateMachine.get_instance().update(new Object[]{AppData.UpdateType.Clear,ServerData.admin_id});
         }
 
         @InteractiveCommand(args = {1}, usage = {"remove_by_id <id> - удалить элемент с указанным id"}, help = "Удаляет указанный элемент")
         public void remove_by_id(List<String> argc) {
             if (null == char_col.deleteCharacter(argc.get(0), ServerData.admin_id)) logger.error("key not found");
-            else logger.info("Successful remove");
+            else {
+                logger.info("Successful remove");
+                StateMachine.get_instance().update(new Object[]{AppData.UpdateType.Remove,argc.get(0)});
+            }
         }
 
         @InteractiveCommand(args = {0}, usage = {"add_if_max - добавляет новый элемент если он больше любого другого в коллекции, формат ввода объекта, такой же как и у add"}, help = "Добавляет элемент если он максимальный")
@@ -200,6 +207,7 @@ public class ServerConsole {
             if (char_col.getCharacters().values().stream().allMatch(x -> x.compareTo(new_charac.character) <= 0)) {
                 char_col.add(new_charac.id, new_charac.character, ServerData.admin_id);
                 logger.info("Successful add");
+                StateMachine.get_instance().update(new Object[]{AppData.UpdateType.Add,new_charac.character});
             } else {
                 logger.info("It is lower than something -> not added");
             }
@@ -209,8 +217,9 @@ public class ServerConsole {
         public void add_if_min(List<String> argc) {
             var new_charac = add_interactive();
             if (char_col.getCharacters().values().stream().allMatch(x -> x.compareTo(new_charac.character) >= 0)) {
-                char_col.add(new_charac.id, new_charac.character,ServerData.admin_id);
+                char_col.add(new_charac.id, new_charac.character, ServerData.admin_id);
                 logger.info("Successful add");
+                StateMachine.get_instance().update(new Object[]{AppData.UpdateType.Add,new_charac.character});
             } else {
                 logger.info("It is bigger than something -> not added");
             }
@@ -321,6 +330,7 @@ public class ServerConsole {
             }
 
         }
+
         @InteractiveCommand(args = {1}, usage = {"delete_user <пользователь> - удаляет пользователя с указанным именем"}, help = "Удаление пользователя")
         public void delete_user(List<String> argc) {
             try {
@@ -329,12 +339,12 @@ public class ServerConsole {
                 st.setString(1, user);
                 try {
                     int res = st.executeUpdate();
-                    if(res == 0)logger.warn("No such user");
+                    if (res == 0) logger.warn("No such user");
                     else logger.info("Successful deletion");
                 } catch (SQLException e) {
                     try {
                         var res = st.executeUpdate();
-                        if(res == 0)logger.warn("No such user");
+                        if (res == 0) logger.warn("No such user");
                         else logger.info("Successful deletion");
                     } catch (SQLException e2) {
                         logger.error("User with this id already exists");

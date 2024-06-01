@@ -107,6 +107,11 @@
 }
 #lbl_feedback_body_auth
 {
-    -fx-font-size: 20px;
-    -fx-text-fill:  darkblue;
+    -fx-font-size: 18px;
+    -fx-text-fill:  black;
+}
+.check_border
+{
+    -fx-border-width: 10px;
+    -fx-border-color: blue;
 }

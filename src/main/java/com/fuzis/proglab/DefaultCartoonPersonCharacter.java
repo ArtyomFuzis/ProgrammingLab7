@@ -5,6 +5,9 @@ import com.fuzis.proglab.Enums.Popularity;
 import com.fuzis.proglab.Enums.Sex;
 import com.fuzis.proglab.Interaces.IPersonCharacter;
 import com.fuzis.proglab.Exception.UndefinedOpinionException;
+
+import java.io.Serial;
+import java.io.Serializable;
 import java.util.*;
 
 /**
@@ -24,15 +27,16 @@ import java.util.*;
  *<br>
  * <img width="500" src="https://images.stopgame.ru/uploads/users/2021/432959/00011.SAe_eHU.jpg">
  */
-public class DefaultCartoonPersonCharacter implements IPersonCharacter,Comparable<DefaultCartoonPersonCharacter> {
-
-    public DefaultCartoonPersonCharacter(String name, Sex sex) {
-        this(name,sex,null,null,null,null,null);
+public class DefaultCartoonPersonCharacter implements IPersonCharacter,Comparable<DefaultCartoonPersonCharacter>, Serializable {
+    @Serial
+    private static final long serialVersionUID = 522275L;
+    public DefaultCartoonPersonCharacter(String id,String name, Sex sex) {
+        this(id,name,sex,null,null,null,null,null);
     }
-    public DefaultCartoonPersonCharacter(String name, Sex sex, String quote, Double height,Double weight,Popularity popularity,String description) {
-        this(name,sex,quote,null,null,height,weight,null,popularity,description,null,null);
+    public DefaultCartoonPersonCharacter(String id,String name, Sex sex, String quote, Double height,Double weight,Popularity popularity,String description) {
+        this(id,name,sex,quote,null,null,height,weight,null,popularity,description,null,null);
     }
-    public DefaultCartoonPersonCharacter(String name, Sex sex,String quote,Map<String, Opinion> opinions,List<String> additional_names,Double height,Double weight,Boolean isAnimeCharacter,Popularity popularity,String description, Double age,Integer health) {
+    public DefaultCartoonPersonCharacter(String id,String name, Sex sex,String quote,Map<String, Opinion> opinions,List<String> additional_names,Double height,Double weight,Boolean isAnimeCharacter,Popularity popularity,String description, Double age,Integer health) {
         this.name = name;
         this.sex = sex;
         if(quote != null) this.quote = quote;
@@ -46,8 +50,8 @@ public class DefaultCartoonPersonCharacter implements IPersonCharacter,Comparabl
         this.description = description;
         this.health = health;
         this.age = age;
+        this.id = id;
     }
-    //Возможности изменения цитаты, имени, пола и прочего оставим на наследников
     protected String name;
     protected Sex sex;
     protected String quote = "It's cool!";
@@ -60,16 +64,12 @@ public class DefaultCartoonPersonCharacter implements IPersonCharacter,Comparabl
     protected String description;
     protected Integer health;
     protected Double age;
+    protected String id;
 
     public DefaultCartoonPersonCharacter(DefaultCartoonPersonCharacter ch) {
-        this(ch.name, ch.sex,ch.quote,ch.opinions,ch.additionalNames,ch.height,ch.weight,ch.isAnimeCharacter,ch.popularity,ch.description, ch.age,ch.health);
+        this(ch.id,ch.name, ch.sex,ch.quote,ch.opinions,ch.additionalNames,ch.height,ch.weight,ch.isAnimeCharacter,ch.popularity,ch.description, ch.age,ch.health);
     }
-
-    @Override
-    public String getQuote() {
-        return "\"" + this.quote + "\"";
-    }
-
+    public Integer belongs_to;
     @Override
     public Sex getSex() {
         return this.sex;
@@ -82,6 +82,10 @@ public class DefaultCartoonPersonCharacter implements IPersonCharacter,Comparabl
     public Double getAge() {
         return age;
     }
+    public String getId() {
+        return id;
+    }
+    public void setId(String _id) {id = _id;}
 
     @Override
     public String getName() {
@@ -204,6 +208,7 @@ public class DefaultCartoonPersonCharacter implements IPersonCharacter,Comparabl
     @Override
     public String toString() {
         return "DefaultCartoonPersonCharacter{" +
+                "id='" + id + '\'' +
                 "name='" + name + '\'' +
                 ", sex=" + sex +
                 ", quote='" + quote + '\'' +
@@ -263,7 +268,7 @@ public class DefaultCartoonPersonCharacter implements IPersonCharacter,Comparabl
      * <img width="500" src="https://animepersona.com/wp-content/uploads/2022/12/brm7fp6ptaj41-1024x576.webp">
      * @return просто значение поля <code>quote</code>, ничего лишнего
      */
-    public String getSimpleQuote() {
+    public String getQuote() {
         return this.quote;
     }
 }

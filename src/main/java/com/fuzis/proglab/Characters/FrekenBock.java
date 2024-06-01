@@ -14,7 +14,7 @@ import com.fuzis.proglab.Exception.KarlsonMissedRuntimeException;
  */
 public class FrekenBock extends DefaultCartoonPersonCharacter {
     public FrekenBock() {
-        super("Фрекен Бок", Sex.Female);
+        super("Friend1","Фрекен Бок", Sex.Female);
         this.setOpinion("Карлсон", Opinion.Negative);
     }
 

@@ -11,6 +11,7 @@ import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
 import java.io.IOException;
+import java.util.ListResourceBundle;
 import java.util.Locale;
 import java.util.ResourceBundle;
 
@@ -22,9 +23,8 @@ public class GuiApp extends Application {
     public void start(Stage stage) throws IOException {
         setRoot("main",new Locale("ru","RU"));
         setPage("home");
-        scene = new Scene(root.getParent(), 1400, 800);
+        scene = new Scene(root.getParent(), 1600, 800);
         stage.setScene(scene);
-        //stage.setResizable(false);
         stage.show();
     }
     static void setPage(String fxml) {
@@ -60,7 +60,7 @@ public class GuiApp extends Application {
         }
     }
     public static Parent loadFXML(String fxml) throws IOException {
-        ResourceBundle bundle = ResourceBundle.getBundle("UIResources", locale);
+        ResourceBundle bundle = ListResourceBundle.getBundle("com.fuzis.proglab.Localization.UIResources", locale);
         FXMLLoader fxmlLoader = new FXMLLoader(GuiApp.class.getResource(fxml + ".fxml"),bundle);
         return fxmlLoader.load();
     }

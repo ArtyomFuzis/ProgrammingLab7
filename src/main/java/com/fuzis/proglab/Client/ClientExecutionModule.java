@@ -1,13 +1,17 @@
 package com.fuzis.proglab.Client;
 
 import com.fuzis.proglab.AppData;
+import com.fuzis.proglab.DefaultCartoonPersonCharacter;
 
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.function.Consumer;
 
 class ClientExecutionData {
     private static final HashMap<Integer, Thread> handle_table = new HashMap<>();
@@ -51,27 +55,37 @@ class ClientExecutionData {
 public class ClientExecutionModule {
     public static ClientLogger logger = ClientLogger.getInstance();
     public static ClientWritingModule write_module;
-    public static ExecutorService serv = Executors.newCachedThreadPool();
 
     public static void start() {
         ClientReadingModule.start_reading(ClientExecutionModule::request_handle);
         write_module = new ClientWritingModule();
     }
 
-    public static void request_handle(AppData.MessageData msg) {
-        serv.execute(() -> {
+    private static void request_handle(AppData.MessageData msg) {
+
+        Runnable r  =() -> {
             handle_msg(msg);
-        });
+        };
+        Thread thread = new Thread(r);
+        thread.setDaemon(true);
+        thread.start();
     }
-
-
-    public static void handle_msg(AppData.MessageData msg) {
+    public static synchronized void setUpdateHandle(Integer n,Consumer<Object[]> r)
+    {
+        update_handles.put(n,r);
+    }
+    private static final HashMap<Integer,Consumer<Object[]>> update_handles = new HashMap();
+    private static void handle_msg(AppData.MessageData msg) {
         switch (msg.purpose()) {
             case Cmd:
                 logger.warning("Unexpected message: " + msg.toString());
                 break;
             case Update:
+                for(Consumer<Object[]> r : update_handles.values())
+                {
 
+                    r.accept((Object[])msg.body());
+                }
                 break;
             case Response:
                 Thread thr_return = ClientExecutionData.getHandle(msg.id());
@@ -121,5 +135,95 @@ public class ClientExecutionModule {
             System.exit(2);
             return false;
         }
+    }
+    public static String request_collection_info() {
+        Integer id = ClientExecutionData.getId();
+        ClientExecutionData.putHandle(id, Thread.currentThread());
+        write_module.write(new AppData.MessageData(AppData.MsgStatus.Successful, id, new AppData.Command(AppData.CmdType.getCollectionInfo, null), AppData.MsgPurpose.Cmd));
+        try {
+            synchronized (Thread.currentThread()) {
+                Thread.currentThread().wait();
+            }
+        } catch (InterruptedException e) {
+            logger.error("Interrupted");
+        }
+        var order = ClientExecutionData.getOrder(id);
+        if(order.status() != AppData.MsgStatus.Successful) {return null;}
+        return (String) order.body();
+    }
+    public static Collection<DefaultCartoonPersonCharacter> request_collection_all() {
+        Integer id = ClientExecutionData.getId();
+        ClientExecutionData.putHandle(id, Thread.currentThread());
+        write_module.write(new AppData.MessageData(AppData.MsgStatus.Successful, id, new AppData.Command(AppData.CmdType.getAll, null), AppData.MsgPurpose.Cmd));
+        try {
+            synchronized (Thread.currentThread()) {
+                Thread.currentThread().wait();
+            }
+        } catch (InterruptedException e) {
+            logger.error("Interrupted");
+        }
+        var order = ClientExecutionData.getOrder(id);
+        if(order.status() != AppData.MsgStatus.Successful) {return null;}
+        return (Collection<DefaultCartoonPersonCharacter>) order.body();
+    }
+    public static Exception request_add(DefaultCartoonPersonCharacter charac) {
+        Integer id = ClientExecutionData.getId();
+        ClientExecutionData.putHandle(id, Thread.currentThread());
+        write_module.write(new AppData.MessageData(AppData.MsgStatus.Successful, id, new AppData.Command(AppData.CmdType.add, new Object[]{charac.getId(), charac}), AppData.MsgPurpose.Cmd));
+        try {
+            synchronized (Thread.currentThread()) {
+                Thread.currentThread().wait();
+            }
+        } catch (InterruptedException e) {
+            logger.error("Interrupted");
+        }
+        var order = ClientExecutionData.getOrder(id);
+        if(order.status() != AppData.MsgStatus.Successful) {return (Exception)  order.body();}
+        return null;
+    }
+    public static Exception request_update(DefaultCartoonPersonCharacter charac) {
+        Integer id = ClientExecutionData.getId();
+        ClientExecutionData.putHandle(id, Thread.currentThread());
+        write_module.write(new AppData.MessageData(AppData.MsgStatus.Successful, id, new AppData.Command(AppData.CmdType.update, new Object[]{charac.getId(), charac}), AppData.MsgPurpose.Cmd));
+        try {
+            synchronized (Thread.currentThread()) {
+                Thread.currentThread().wait();
+            }
+        } catch (InterruptedException e) {
+            logger.error("Interrupted");
+        }
+        var order = ClientExecutionData.getOrder(id);
+        if(order.status() != AppData.MsgStatus.Successful) {return (Exception)  order.body();}
+        return null;
+    }
+    public static Exception request_delete(DefaultCartoonPersonCharacter charac) {
+        Integer id = ClientExecutionData.getId();
+        ClientExecutionData.putHandle(id, Thread.currentThread());
+        write_module.write(new AppData.MessageData(AppData.MsgStatus.Successful, id, new AppData.Command(AppData.CmdType.remove, new Object[]{charac.getId()}), AppData.MsgPurpose.Cmd));
+        try {
+            synchronized (Thread.currentThread()) {
+                Thread.currentThread().wait();
+            }
+        } catch (InterruptedException e) {
+            logger.error("Interrupted");
+        }
+        var order = ClientExecutionData.getOrder(id);
+        if(order.status() != AppData.MsgStatus.Successful) {return (Exception)  order.body();}
+        return null;
+    }
+    public static Exception request_clear() {
+        Integer id = ClientExecutionData.getId();
+        ClientExecutionData.putHandle(id, Thread.currentThread());
+        write_module.write(new AppData.MessageData(AppData.MsgStatus.Successful, id, new AppData.Command(AppData.CmdType.clear,null), AppData.MsgPurpose.Cmd));
+        try {
+            synchronized (Thread.currentThread()) {
+                Thread.currentThread().wait();
+            }
+        } catch (InterruptedException e) {
+            logger.error("Interrupted");
+        }
+        var order = ClientExecutionData.getOrder(id);
+        if(order.status() != AppData.MsgStatus.Successful) {return (Exception)  order.body();}
+        return null;
     }
 }

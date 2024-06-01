@@ -14,9 +14,7 @@ import java.util.concurrent.Executors;
 
 public class ClientWritingModule {
     ClientLogger logger = ClientLogger.getInstance();
-    public static ExecutorService executorService = Executors.newFixedThreadPool(3);
     public static ObjectOutputStream oos;
-
     public void write(AppData.MessageData req) {
         if (oos == null) {
             boolean first_notify = true;
@@ -44,7 +42,9 @@ public class ClientWritingModule {
         Runnable run = () -> {
             inner_write(req);
         };
-        executorService.submit(run);
+        Thread t = new Thread(run);
+        t.setDaemon(true);
+        t.start();
     }
 
     public synchronized void inner_write(AppData.MessageData req) {

@@ -1,13 +1,342 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import java.lang.*?>
-<?import java.util.*?>
+<?import javafx.geometry.*?>
 <?import javafx.scene.*?>
+<?import javafx.scene.canvas.*?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
+<?import javafx.scene.text.*?>
 
-<AnchorPane xmlns="http://javafx.com/javafx"
-            xmlns:fx="http://javafx.com/fxml"
-            prefHeight="400.0" prefWidth="600.0">
-
+<AnchorPane maxHeight="600.0" maxWidth="1600.0" minHeight="600.0" minWidth="1600.0" prefHeight="600.0" prefWidth="1500.0" xmlns="http://javafx.com/javafx/17.0.2-ea" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.fuzis.proglab.GUI.Home">
+   <children>
+      <TabPane prefHeight="200.0" prefWidth="200.0" tabClosingPolicy="UNAVAILABLE" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+        <tabs>
+          <Tab text="%home.tab.scene">
+            <content>
+              <AnchorPane maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308">
+                     <children>
+                        <Canvas fx:id="cnvs" height="700.0" width="1600.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
+                     </children></AnchorPane>
+            </content>
+          </Tab>
+          <Tab text="%home.tab.table">
+            <content>
+              <AnchorPane minHeight="0.0" minWidth="0.0">
+                     <children>
+                        <HBox maxHeight="1.7976931348623157E308" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                           <children>
+                              <TableView fx:id="tbl" maxWidth="1000.0" minWidth="1000.0" onMouseClicked="#row_clicked" prefWidth="1000.0">
+                                <columns>
+                                  <TableColumn fx:id="col_id" prefWidth="75.0" text="id" />
+                                  <TableColumn fx:id="col_name" prefWidth="75.0" text="name" />
+                                    <TableColumn fx:id="col_sex" prefWidth="75.0" text="sex" />
+                                    <TableColumn fx:id="col_quote" prefWidth="75.0" text="quote" />
+                                    <TableColumn fx:id="col_height" prefWidth="75.0" text="height" />
+                                    <TableColumn fx:id="col_weight" prefWidth="75.0" text="weight" />
+                                    <TableColumn fx:id="col_popularity" prefWidth="75.0" text="popularity" />
+                                    <TableColumn fx:id="col_age" prefWidth="75.0" text="age" />
+                                    <TableColumn fx:id="col_description" prefWidth="75.0" text="description" />
+                                    <TableColumn fx:id="col_health" prefWidth="75.0" text="health" />
+                                    <TableColumn fx:id="col_anime" prefWidth="75.0" text="anime" />
+                                    <TableColumn fx:id="col_names" prefWidth="75.0" text="names" />
+                                    <TableColumn fx:id="col_opinions" prefWidth="75.0" text="opinions" />
+                                </columns>
+                              </TableView>
+                              <VBox maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minWidth="480.0" prefHeight="1500.0" prefWidth="480.0">
+                                 <HBox.margin>
+                                    <Insets left="10.0" />
+                                 </HBox.margin>
+                                 <styleClass>
+                                    <String fx:value="ctrl2" />
+                                    <String fx:value="main_back" />
+                                    <String fx:value="add_padding" />
+                                 </styleClass>
+                                 <children>
+                                    <HBox minHeight="25.0">
+                                       <children>
+                                          <Label maxHeight="1.7976931348623157E308" prefWidth="90.0" text="id">
+                                             <HBox.margin>
+                                                <Insets right="5.0" />
+                                             </HBox.margin>
+                                             <font>
+                                                <Font size="18.0" />
+                                             </font></Label>
+                                          <TextField fx:id="fld_id" maxWidth="1.7976931348623157E308" HBox.hgrow="ALWAYS">
+                                             <HBox.margin>
+                                                <Insets right="10.0" />
+                                             </HBox.margin></TextField>
+                                       </children>
+                                       <VBox.margin>
+                                          <Insets top="20.0" />
+                                       </VBox.margin>
+                                    </HBox>
+                                     <HBox minHeight="25.0">
+                                         <children>
+                                             <Label maxHeight="1.7976931348623157E308" prefWidth="90.0" text="name">
+                                                 <HBox.margin>
+                                                     <Insets right="5.0" />
+                                                 </HBox.margin>
+                                             <font>
+                                                <Font size="18.0" />
+                                             </font></Label>
+                                             <TextField fx:id="fld_name" maxWidth="1.7976931348623157E308" HBox.hgrow="ALWAYS">
+                                                 <HBox.margin>
+                                                     <Insets right="10.0" />
+                                                 </HBox.margin></TextField>
+                                         </children>
+                                         <VBox.margin>
+                                             <Insets top="5.0" />
+                                         </VBox.margin>
+                                     </HBox>
+                                     <HBox minHeight="25.0">
+                                         <children>
+                                             <Label maxHeight="1.7976931348623157E308" prefWidth="90.0" text="sex">
+                                                 <HBox.margin>
+                                                     <Insets right="5.0" />
+                                                 </HBox.margin>
+                                                 <font>
+                                                     <Font size="18.0" />
+                                                 </font></Label>
+                                          <ChoiceBox fx:id="ch_sex" maxWidth="1.7976931348623157E308" HBox.hgrow="ALWAYS">
+                                             <HBox.margin>
+                                                <Insets right="10.0" />
+                                             </HBox.margin></ChoiceBox>
+                                         </children>
+                                         <VBox.margin>
+                                             <Insets top="5.0" />
+                                         </VBox.margin>
+                                     </HBox>
+                                     <HBox minHeight="25.0">
+                                         <children>
+                                             <Label maxHeight="1.7976931348623157E308" prefWidth="90.0" text="quote">
+                                                 <HBox.margin>
+                                                     <Insets right="5.0" />
+                                                 </HBox.margin>
+                                                 <font>
+                                                     <Font size="18.0" />
+                                                 </font></Label>
+                                             <TextField fx:id="fld_quote" maxWidth="1.7976931348623157E308" HBox.hgrow="ALWAYS">
+                                                 <HBox.margin>
+                                                     <Insets right="10.0" />
+                                                 </HBox.margin></TextField>
+                                         </children>
+                                         <VBox.margin>
+                                             <Insets top="5.0" />
+                                         </VBox.margin>
+                                     </HBox>
+                                     <HBox minHeight="25.0">
+                                         <children>
+                                             <Label maxHeight="1.7976931348623157E308" prefWidth="90.0" text="height">
+                                                 <HBox.margin>
+                                                     <Insets right="5.0" />
+                                                 </HBox.margin>
+                                                 <font>
+                                                     <Font size="18.0" />
+                                                 </font></Label>
+                                             <TextField fx:id="fld_height" maxWidth="1.7976931348623157E308" HBox.hgrow="ALWAYS">
+                                                 <HBox.margin>
+                                                     <Insets right="10.0" />
+                                                 </HBox.margin></TextField>
+                                         </children>
+                                         <VBox.margin>
+                                             <Insets top="5.0" />
+                                         </VBox.margin>
+                                     </HBox>
+                                     <HBox minHeight="25.0">
+                                         <children>
+                                             <Label maxHeight="1.7976931348623157E308" prefWidth="90.0" text="weight">
+                                                 <HBox.margin>
+                                                     <Insets right="5.0" />
+                                                 </HBox.margin>
+                                                 <font>
+                                                     <Font size="18.0" />
+                                                 </font></Label>
+                                             <TextField fx:id="fld_weight" maxWidth="1.7976931348623157E308" HBox.hgrow="ALWAYS">
+                                                 <HBox.margin>
+                                                     <Insets right="10.0" />
+                                                 </HBox.margin></TextField>
+                                         </children>
+                                         <VBox.margin>
+                                             <Insets top="5.0" />
+                                         </VBox.margin>
+                                     </HBox>
+                                     <HBox minHeight="25.0">
+                                         <children>
+                                             <Label maxHeight="1.7976931348623157E308" prefWidth="90.0" text="popularity">
+                                                 <HBox.margin>
+                                                     <Insets right="5.0" />
+                                                 </HBox.margin>
+                                                 <font>
+                                                     <Font size="18.0" />
+                                                 </font></Label>
+                                             <ChoiceBox fx:id="ch_popularity" maxWidth="1.7976931348623157E308" HBox.hgrow="ALWAYS">
+                                                 <HBox.margin>
+                                                     <Insets right="10.0" />
+                                                 </HBox.margin></ChoiceBox>
+                                         </children>
+                                         <VBox.margin>
+                                             <Insets top="5.0" />
+                                         </VBox.margin>
+                                     </HBox>
+                                     <HBox minHeight="25.0">
+                                         <children>
+                                             <Label maxHeight="1.7976931348623157E308" prefWidth="90.0" text="age">
+                                                 <HBox.margin>
+                                                     <Insets right="5.0" />
+                                                 </HBox.margin>
+                                                 <font>
+                                                     <Font size="18.0" />
+                                                 </font></Label>
+                                             <TextField fx:id="fld_age" maxWidth="1.7976931348623157E308" HBox.hgrow="ALWAYS">
+                                                 <HBox.margin>
+                                                     <Insets right="10.0" />
+                                                 </HBox.margin></TextField>
+                                         </children>
+                                         <VBox.margin>
+                                             <Insets top="5.0" />
+                                         </VBox.margin>
+                                     </HBox>
+                                     <HBox minHeight="25.0">
+                                         <children>
+                                             <Label maxHeight="1.7976931348623157E308" prefWidth="90.0" text="description">
+                                                 <HBox.margin>
+                                                     <Insets right="5.0" />
+                                                 </HBox.margin>
+                                                 <font>
+                                                     <Font size="18.0" />
+                                                 </font></Label>
+                                             <TextField fx:id="fld_description" maxWidth="1.7976931348623157E308" HBox.hgrow="ALWAYS">
+                                                 <HBox.margin>
+                                                     <Insets right="10.0" />
+                                                 </HBox.margin></TextField>
+                                         </children>
+                                         <VBox.margin>
+                                             <Insets top="5.0" />
+                                         </VBox.margin>
+                                     </HBox>
+                                     <HBox minHeight="25.0">
+                                         <children>
+                                             <Label maxHeight="1.7976931348623157E308" prefWidth="90.0" text="health">
+                                                 <HBox.margin>
+                                                     <Insets right="5.0" />
+                                                 </HBox.margin>
+                                                 <font>
+                                                     <Font size="18.0" />
+                                                 </font></Label>
+                                             <TextField fx:id="fld_health" maxWidth="1.7976931348623157E308" HBox.hgrow="ALWAYS">
+                                                 <HBox.margin>
+                                                     <Insets right="10.0" />
+                                                 </HBox.margin></TextField>
+                                         </children>
+                                         <VBox.margin>
+                                             <Insets top="5.0" />
+                                         </VBox.margin>
+                                     </HBox>
+                                     <HBox minHeight="25.0">
+                                         <children>
+                                             <Label maxHeight="1.7976931348623157E308" prefWidth="90.0" text="anime">
+                                                 <HBox.margin>
+                                                     <Insets right="5.0" />
+                                                 </HBox.margin>
+                                                 <font>
+                                                     <Font size="18.0" />
+                                                 </font></Label>
+                                          <CheckBox fx:id="chk_anime" maxHeight="1.7976931348623157E308" mnemonicParsing="false" HBox.hgrow="ALWAYS">
+                                              <HBox.margin>
+                                                  <Insets right="10.0" />
+                                              </HBox.margin></CheckBox>
+                                         </children>
+                                         <VBox.margin>
+                                             <Insets top="5.0" />
+                                         </VBox.margin>
+                                     </HBox>
+                                     <HBox minHeight="25.0">
+                                         <children>
+                                             <Label maxHeight="1.7976931348623157E308" prefWidth="90.0" text="names">
+                                                 <HBox.margin>
+                                                     <Insets right="5.0" />
+                                                 </HBox.margin>
+                                                 <font>
+                                                     <Font size="18.0" />
+                                                 </font></Label>
+                                             <TextField fx:id="fld_names" maxWidth="1.7976931348623157E308" HBox.hgrow="ALWAYS">
+                                                 <HBox.margin>
+                                                     <Insets right="10.0" />
+                                                 </HBox.margin></TextField>
+                                         </children>
+                                         <VBox.margin>
+                                             <Insets top="5.0" />
+                                         </VBox.margin>
+                                     </HBox>
+                                     <HBox minHeight="25.0">
+                                         <children>
+                                             <Label maxHeight="1.7976931348623157E308" prefWidth="90.0" text="opinions">
+                                                 <HBox.margin>
+                                                     <Insets right="5.0" />
+                                                 </HBox.margin>
+                                                 <font>
+                                                     <Font size="18.0" />
+                                                 </font></Label>
+                                             <TextField fx:id="fld_opinions" maxWidth="1.7976931348623157E308" HBox.hgrow="ALWAYS">
+                                                 <HBox.margin>
+                                                     <Insets right="10.0" />
+                                                 </HBox.margin></TextField>
+                                         </children>
+                                         <VBox.margin>
+                                             <Insets top="5.0" />
+                                         </VBox.margin>
+                                     </HBox>
+                                    <ButtonBar maxWidth="1.7976931348623157E308" prefHeight="50.0">
+                                      <buttons>
+                                        <Button fx:id="btn_add" mnemonicParsing="false" onMouseClicked="#add_clicked" prefHeight="30.0" text="%home.add.btn">
+                                             <cursor>
+                                                <Cursor fx:constant="HAND" />
+                                             </cursor></Button>
+                                          <Button fx:id="btn_update" disable="true" mnemonicParsing="false" onMouseClicked="#update_clicked" prefHeight="30.0" text="%home.update.btn">
+                                             <cursor>
+                                                <Cursor fx:constant="HAND" />
+                                             </cursor></Button>
+                                          <Button fx:id="btn_remove" disable="true" mnemonicParsing="false" onMouseClicked="#remove_clicked" prefHeight="30.0" text="%home.remove.btn">
+                                             <cursor>
+                                                <Cursor fx:constant="HAND" />
+                                             </cursor></Button>
+                                          <Button fx:id="btn_clear" mnemonicParsing="false" onMouseClicked="#clear_clicked" prefHeight="30.0" text="%home.clear.btn">
+                                             <cursor>
+                                                <Cursor fx:constant="HAND" />
+                                             </cursor></Button>
+                                          <Button fx:id="btn_clfld" mnemonicParsing="false" onMouseClicked="#clfld_clicked" prefHeight="30.0" text="%home.clfld.btn">
+                                          <cursor>
+                                              <Cursor fx:constant="HAND" />
+                                          </cursor></Button>
+                                      </buttons>
+                                       <VBox.margin>
+                                          <Insets right="40.0" top="40.0" />
+                                       </VBox.margin>
+                                    </ButtonBar>
+                                     <ButtonBar buttonMinWidth="150.0" maxWidth="1.7976931348623157E308" prefHeight="30.0">
+                                         <buttons>
+                                             <Button fx:id="btn_filter" mnemonicParsing="false" onMouseClicked="#filter_clicked" prefHeight="30.0" text="%home.filter.btn">
+                                             <cursor>
+                                                <Cursor fx:constant="HAND" />
+                                             </cursor></Button>
+                                             <Button fx:id="btn_clfil" mnemonicParsing="false" onMouseClicked="#clfil_clicked" prefHeight="30.0" text="%home.clfil.btn">
+                                             <cursor>
+                                                <Cursor fx:constant="HAND" />
+                                             </cursor></Button>
+                                         </buttons>
+                                         <VBox.margin>
+                                             <Insets right="70.0" />
+                                         </VBox.margin>
+                                     </ButtonBar>
+                                 </children>
+                              </VBox>
+                           </children>
+                        </HBox>
+                     </children></AnchorPane>
+            </content>
+          </Tab>
+        </tabs>
+      </TabPane>
+   </children>
 </AnchorPane>

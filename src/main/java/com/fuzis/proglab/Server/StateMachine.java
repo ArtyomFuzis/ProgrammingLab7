@@ -101,5 +101,12 @@ public class StateMachine
         storage.put(ServerData.admin_id,obj_add);
         return obj_add;
     }
+    public synchronized void update(Object[] args)
+    {
+        for(var obj : storage.values())
+        {
+            obj.write(new AppData.MessageData(AppData.MsgStatus.Successful,0,args, AppData.MsgPurpose.Update) );
+        }
+    }
 }
 

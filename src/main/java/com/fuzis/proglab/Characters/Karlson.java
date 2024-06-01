@@ -12,14 +12,14 @@ public class Karlson extends DefaultCartoonPersonCharacter {
      */
     public class KarlsonFriend extends DefaultCartoonPersonCharacter
     {
-        public KarlsonFriend(String name,Sex sex)
+        public KarlsonFriend(String id,String name,Sex sex)
         {
-            super(name,sex);
+            super(id,name,sex);
             this.quote = Karlson.this.quote;
         }
     }
     public Karlson() {
-        super("Карлсон", Sex.Male);
+        super("Карлсон","Карлсон", Sex.Male);
         this.quote = "Если меня не кормят, я уже не я";
     }
 }

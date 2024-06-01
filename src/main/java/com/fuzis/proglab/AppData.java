@@ -14,6 +14,12 @@ public class AppData {
         Successful,
         Error
     }
+    public enum UpdateType {
+        Remove,
+        Add,
+        Clear,
+        Update
+    }
 
     public enum MsgPurpose {
         Cmd,
@@ -33,6 +39,7 @@ public class AppData {
         getAll,
         clear,
         remove,
+        update
     }
 
     public record MessageData(MsgStatus status, Integer id, Object body, MsgPurpose purpose) implements Serializable {

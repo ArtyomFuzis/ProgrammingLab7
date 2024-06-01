@@ -8,8 +8,6 @@ import com.fuzis.proglab.Enums.Sex;
 import com.fuzis.proglab.Exception.DataBaseConnectionFailedException;
 import com.fuzis.proglab.Exception.NoRootsException;
 import com.fuzis.proglab.Server.ServerData;
-import com.fuzis.proglab.Server.ServerExecutionModule;
-import com.fuzis.proglab.Server.ServerMain;
 import com.fuzis.proglab.Server.StateMachine;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -105,6 +103,7 @@ public class CharacterCollectionSQL {
                     st_add3.execute();
                 }
             }
+            charac.belongs_to = state.getAuth().id();
             characters.put(id, charac);
         } catch (SQLException e) {
             logger.error(e.getMessage());
@@ -184,7 +183,9 @@ public class CharacterCollectionSQL {
             ResultSet rs = st.executeQuery("select * from character");
             while (rs.next()) {
                 DefaultCartoonPersonCharacter pc =
-                        new DefaultCartoonPersonCharacter(rs.getString("name"),
+                        new DefaultCartoonPersonCharacter(
+                                rs.getString("string_id"),
+                                rs.getString("name"),
                                 rs.getString("sex") == null ? null : Sex.valueOf(rs.getString("sex")),
                                 rs.getString("quote"),
                                 null,
@@ -197,6 +198,7 @@ public class CharacterCollectionSQL {
                                 rs.getDouble("age"),
                                 rs.getInt("health")
                         );
+                pc.belongs_to = rs.getInt("belongsto");
                 Statement st2 = con.createStatement();
                 ResultSet sub_rs = st2.executeQuery("select * from character_additionalnames where character_id = " + rs.getInt("id") + ";");
                 List<String> additional_names = new ArrayList<>();
@@ -283,12 +285,12 @@ public class CharacterCollectionSQL {
                     st_clear = con.prepareStatement("DELETE FROM character;");
                 logger.info("Deleted: " + st_clear.executeUpdate() + " characters");
                 characters.clear();
-
             } else {
                 if (st_clear_person == null)
                     st_clear_person = con.prepareStatement("DELETE FROM character WHERE belongsto = ?;");
                 st_clear_person.setInt(1, state.getAuth().id());
-                logger.info("Deleted: " + st_clear_person.executeUpdate() + " characters");
+                var res = st_clear_person.executeUpdate();
+                logger.info("Deleted: " + res + " characters");
                 load();
             }
         } catch (SQLException e) {

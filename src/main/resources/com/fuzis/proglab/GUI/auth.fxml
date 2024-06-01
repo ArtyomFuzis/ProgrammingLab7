@@ -67,16 +67,16 @@
       </AnchorPane>
       <AnchorPane fx:id="anchor_msg_auth" prefHeight="400.0" prefWidth="500.0" visible="false" AnchorPane.leftAnchor="500.0">
          <children>
-            <VBox prefHeight="200.0" prefWidth="100.0" AnchorPane.bottomAnchor="220.0" AnchorPane.leftAnchor="10.0" AnchorPane.rightAnchor="100.0" AnchorPane.topAnchor="10.0">
+            <VBox prefHeight="200.0" prefWidth="100.0" AnchorPane.bottomAnchor="240.0" AnchorPane.leftAnchor="10.0" AnchorPane.rightAnchor="100.0" AnchorPane.topAnchor="10.0">
                <children>
                   <HBox prefHeight="50.0" prefWidth="1000.0">
                      <children>
-                        <ImageView fitHeight="50.0" fitWidth="50.0" pickOnBounds="true" preserveRatio="true">
+                        <ImageView fx:id="img_res_auth" fitHeight="50.0" fitWidth="50.0" pickOnBounds="true" preserveRatio="true">
                            <image>
                               <Image url="@error.png" />
                            </image>
                            <HBox.margin>
-                              <Insets left="15.0" />
+                              <Insets left="15.0" top="10.0" />
                            </HBox.margin></ImageView>
                         <Label fx:id="lbl_feedback_head_auth" alignment="TOP_CENTER" maxWidth="1.7976931348623157E308" prefWidth="1000.0" text="%error">
                            <HBox.margin>
@@ -87,10 +87,13 @@
                            </padding></Label>
                      </children>
                   </HBox>
-                  <Label fx:id="lbl_feedback_body_auth" textFill="#ffffffa9">
+                  <Label fx:id="lbl_feedback_body_auth" alignment="TOP_LEFT" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" textFill="#ffffffa9" VBox.vgrow="ALWAYS">
                      <font>
                         <Font size="24.0" />
-                     </font></Label>
+                     </font>
+                     <VBox.margin>
+                        <Insets left="40.0" />
+                     </VBox.margin></Label>
                </children>
                <styleClass>
                   <String fx:value="main_back" />

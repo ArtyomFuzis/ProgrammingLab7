@@ -43,15 +43,6 @@ public class ClientMain  {
         ClientConnectionModule.connect();
         ClientExecutionModule.start();
         GuiApp.outer_start(args);
-        /*System.out.println(ClientExecutionModule.request_auth("just_man","123"));
-        System.out.println(ClientExecutionModule.request_auth("just_man","567"));
-        System.out.println(ClientExecutionModule.request_auth("just_man","7575"));
-        System.out.println(ClientExecutionModule.request_auth("just_man","5757575"));
-        System.out.println(ClientExecutionModule.request_auth("just_man","hjngjh"));
-        System.out.println(ClientExecutionModule.request_auth("just_man","55"));
-        System.out.println(ClientExecutionModule.request_auth("just_man","sus"));*/
-
-
     }
 
 }
