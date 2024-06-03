@@ -6,6 +6,7 @@ import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.image.Image;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
@@ -22,8 +23,9 @@ public class GuiApp extends Application {
     @Override
     public void start(Stage stage) throws IOException {
         setRoot("main",new Locale("ru","RU"));
+        stage.getIcons().add(new Image(GuiApp.class.getResource("icon.png").openStream()));
         setPage("home");
-        scene = new Scene(root.getParent(), 1600, 800);
+        scene = new Scene(root.getParent(), 1700, 800);
         stage.setScene(scene);
         stage.show();
     }

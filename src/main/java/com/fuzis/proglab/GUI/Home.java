@@ -1,5 +1,6 @@
 package com.fuzis.proglab.GUI;
 
+import com.fuzis.proglab.AppData;
 import com.fuzis.proglab.Client.ClientExecutionModule;
 import com.fuzis.proglab.DefaultCartoonPersonCharacter;
 import com.fuzis.proglab.Enums.Opinion;
@@ -9,20 +10,22 @@ import com.fuzis.proglab.Exception.NoRootsException;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.fxml.FXML;
-import javafx.scene.Node;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.image.Image;
-import javafx.scene.layout.GridPane;
-import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
-import javafx.scene.paint.Paint;
+import javafx.scene.text.Font;
+import javafx.scene.text.TextAlignment;
+import javafx.stage.Stage;
 
-import javax.swing.text.StyledEditorKit;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.*;
 import java.util.function.Predicate;
-import java.util.stream.Collectors;
+
 
 public class Home {
 
@@ -221,13 +224,12 @@ public class Home {
         fld_quote.textProperty().addListener(listener_quote);
         fld_opinions.textProperty().addListener(listener_opinions);
         fill();
-        ClientExecutionModule.setUpdateHandle(0,this::update_table);
         draw_canvas();
+        ClientExecutionModule.setUpdateHandle(0,this::update_table);
+
     }
 
     private void update_table(Object[] args) {
-        System.out.println(args[0]);
-        System.out.println(args[1]);
         fill();
     }
 
@@ -380,6 +382,11 @@ public class Home {
         alert.setTitle("ERROR");
         alert.setHeaderText(resources.getString(type.toString().toLowerCase()));
         alert.setContentText(msg);
+        Stage stage = (Stage) alert.getDialogPane().getScene().getWindow();
+        try {
+            stage.getIcons().add(new Image(GuiApp.class.getResource("icon.png").openStream()));
+        }
+        catch (IOException e) {}
         alert.show();
     }
     private boolean show_conformation( String msg)
@@ -394,6 +401,11 @@ public class Home {
         yesButton.setDefaultButton( false );
         alert.setTitle("CONFORMATION");
         alert.setHeaderText(resources.getString("CONFORMATION"));
+        Stage stage = (Stage) alert.getDialogPane().getScene().getWindow();
+        try {
+            stage.getIcons().add(new Image(GuiApp.class.getResource("icon.png").openStream()));
+        }
+        catch (IOException e) {}
         alert.showAndWait();
         return (alert.getResult() == yes_btn);
     }
@@ -476,19 +488,150 @@ public class Home {
         filters.clear();
         fill();
     }
+    private String preText(String text)
+    {
+        int max_length = 8;
+        if(text == null || text.isEmpty()) return "No name";
+        if(text.length() > max_length)
+        {
+            return text.substring(0, max_length-3)+"...";
+        }
+        return text;
+    }
+    HashMap<String,byte[]>  imgs = new HashMap<>();
+    private InputStream getImage(String name)
+    {
+        if(imgs.containsKey(name))return new ByteArrayInputStream(imgs.get(name));
+        String[] ext = new String[]{".gif",".png",".jpg",".jpeg",".bmp"};
+        for(var el : ext) {
+            try {
+                var res = GuiApp.class.getResource(name+el);
+                if(res != null) {
+                    var stream = res.openStream();
+                    byte[] bytes = new byte[stream.available()];
+                    stream.read(bytes);
+                    imgs.put(name, bytes);
+                    return new ByteArrayInputStream(bytes);
+                }
+            } catch (IOException ex) {
+
+            }
+        }
+        try {
+            if(imgs.containsKey("notfound"))return new ByteArrayInputStream(imgs.get("notfound"));
+            var res = GuiApp.class.getResource("notfound.png");
+            if(res != null) {
+                var stream = res.openStream();
+                byte[] bytes = new byte[stream.available()];
+                stream.read(bytes);
+                imgs.put("notfound", bytes);
+                return new ByteArrayInputStream(bytes);
+            }
+        } catch (IOException ex) {
+
+        }
+        return new ByteArrayInputStream(new byte[]{});
+    }
 
     @FXML
     private Canvas cnvs;
-    private void draw_canvas() {
-        /*var context = cnvs.getGraphicsContext2D();
+    int ins = 50;
+    int w = 215;
+    int h = 300;
+    int line_y = 40;
+    int img_y = 40;
+    int img_inset_x = 10;
+    int img_inset_y = 10;
+    int font_size = 40;
+    HashMap<String,Image> imgss = new HashMap<>();
+    private void draw_canvas( ) {
+        var col = ClientExecutionModule.request_collection_all();
+        last_col = col;
+
+        cnvs.setHeight(Math.ceil(((double)col.size())/6)*(ins+h)+ins);
+        var context = cnvs.getGraphicsContext2D();
+        context.clearRect(0, 0, cnvs.getWidth(), cnvs.getHeight());
+        context.setStroke(Color.RED);
         context.setFill(Color.AQUA);
         try {
-            context.drawImage(new Image("resources/com/fuzis/proglab/GUI/1.jpg"), 0, 0);
+            //context.drawImage(new Image(GuiApp.class.getResource("back.jpg").openStream(),1600.0,700.0,false,true), 0, 0);
+            int i = 0;
+            int j = 0;
+            for (var el : col)
+            {
+                context.fillRect(ins+i*(ins + w),ins+j*(ins + h),w,h);
+                context.strokeRect(ins+i*(ins + w)+1,ins+j*(ins + h)+1,w-1,h-1);
+                context.setStroke(Color.BLACK);
+                context.strokeLine(ins+i*(ins + w)+2,ins+j*(ins + h)+line_y,ins+i*(ins + w)+w-2,ins+j*(ins + h)+line_y);
+                context.setTextAlign(TextAlignment.CENTER);
+                context.setFont(new Font("Times new Roman", font_size));
+                context.strokeText(preText(el.getName()),ins+i*(ins + w)+((double)w)/2,ins+j*(ins + h)+line_y-3);
+                Image img;
+                if(imgss.containsKey(el.getId()))img = imgss.get(el.getId());
+                else
+                {
+                    img = new Image(getImage(el.getId()),w-2*img_inset_x,h-img_y-2*img_inset_y,true,false);
+                    imgss.put(el.getId(),img);
+                }
+                context.drawImage(img, ins+i*(ins + w)+((double)w-img.getWidth())/2,ins+j*(ins + h)+img_y+img_inset_y);
+                i++;
+                if(i == 6)
+                {
+                    i = 0;
+                    j++;
+                }
+            }
+            last_i = i;
+            last_j = j;
         }
         catch (Exception e)
         {
-            e.printStackTrace();
             System.out.println(e.getMessage());
-        }*/
+            e.printStackTrace();
+            System.exit(1);
+        }
     }
+    /*private synchronized void  update_canvas(Object[] args) {
+        AppData.UpdateType up_type = (AppData.UpdateType) args[0];
+        switch(up_type)
+        {
+            case Add ->
+            {
+                try
+                {
+                    var context = cnvs.getGraphicsContext2D();
+                    var el = (DefaultCartoonPersonCharacter) args[1];
+                    context.setFill(Color.AQUA);
+                    context.setTextAlign(TextAlignment.CENTER);
+                    context.setFont(new Font("Times new Roman", font_size));
+                    var img = new Image(getImage(el.getId()),w-2*img_inset_x,h-img_y-2*img_inset_y,true,false);
+                    System.out.println(ins+(last_i-1)*(ins + w));
+                    System.out.println(ins+last_i*(ins + w));
+                    for(double x = ins+(last_i-1)*(ins + w); x <=ins+last_i*(ins + w); x+=0.25)
+                    {
+                        Thread.sleep(1);
+                        redraw_canvas();
+                        context.setStroke(Color.RED);
+                        context.fillRect(x,ins+last_j*(ins + h),w,h);
+                        context.strokeRect(x+1,ins+last_j*(ins + h)+1,w-1,h-1);
+                        context.setStroke(Color.BLACK);
+                        context.strokeLine(x+2,ins+last_j*(ins + h)+line_y,x+w-2,ins+last_j*(ins + h)+line_y);
+                        context.strokeText(preText(el.getName()),x+((double)w)/2,ins+last_j*(ins + h)+line_y-3);
+                        context.drawImage(img, x+((double)w-img.getWidth())/2,ins+last_j*(ins + h)+img_y+img_inset_y);
+                    }
+                    draw_canvas(ClientExecutionModule.request_collection_all());
+
+                }
+                catch (InterruptedException ex)
+                {
+
+                }
+            }
+            default ->
+            {
+                draw_canvas(ClientExecutionModule.request_collection_all());
+            }
+        }
+
+    }*/
 }

@@ -8,21 +8,29 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.text.*?>
 
-<AnchorPane maxHeight="600.0" maxWidth="1600.0" minHeight="600.0" minWidth="1600.0" prefHeight="600.0" prefWidth="1500.0" xmlns="http://javafx.com/javafx/17.0.2-ea" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.fuzis.proglab.GUI.Home">
+<AnchorPane maxHeight="600.0" maxWidth="1700.0" minHeight="2000.0" minWidth="1700.0" prefHeight="600.0" prefWidth="1500.0" xmlns="http://javafx.com/javafx/17.0.2-ea" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.fuzis.proglab.GUI.Home">
    <children>
       <TabPane prefHeight="200.0" prefWidth="200.0" tabClosingPolicy="UNAVAILABLE" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
         <tabs>
           <Tab text="%home.tab.scene">
             <content>
-              <AnchorPane maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308">
+              <AnchorPane maxHeight="720.0" maxWidth="1.7976931348623157E308">
                      <children>
-                        <Canvas fx:id="cnvs" height="700.0" width="1600.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
+                        <ScrollPane prefHeight="200.0" prefWidth="200.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                          <content>
+                            <AnchorPane maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="0.0" minWidth="0.0">
+                                 <children>
+                                    <Canvas fx:id="cnvs" height="2000.0" width="1600.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
+                                 </children>
+                              </AnchorPane>
+                          </content>
+                        </ScrollPane>
                      </children></AnchorPane>
             </content>
           </Tab>
           <Tab text="%home.tab.table">
             <content>
-              <AnchorPane minHeight="0.0" minWidth="0.0">
+              <AnchorPane maxHeight="600.0" minHeight="0.0" minWidth="0.0">
                      <children>
                         <HBox maxHeight="1.7976931348623157E308" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
                            <children>

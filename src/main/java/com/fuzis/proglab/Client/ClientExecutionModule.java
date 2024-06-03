@@ -164,7 +164,7 @@ public class ClientExecutionModule {
         }
         var order = ClientExecutionData.getOrder(id);
         if(order.status() != AppData.MsgStatus.Successful) {return null;}
-        return (Collection<DefaultCartoonPersonCharacter>) order.body();
+        return ((Collection<DefaultCartoonPersonCharacter>) order.body()).stream().sorted((x,y)->x.getId().compareTo(y.getId())).toList();
     }
     public static Exception request_add(DefaultCartoonPersonCharacter charac) {
         Integer id = ClientExecutionData.getId();
