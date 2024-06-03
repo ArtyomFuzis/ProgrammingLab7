@@ -29,6 +29,11 @@
     -fx-border-width: 2px;
     -fx-border-radius: 50px;
 }
+.no_radius
+{
+    -fx-background-radius: 0;
+    -fx-border-radius: 0;
+}
 .add_padding
 {
     -fx-padding: 7 10 7 10 ; /* t r b l */

@@ -39,6 +39,9 @@ public class UIResources_ru_RU extends ListResourceBundle {
                     {"NO","Нет"},
                     {"home.clfld.btn","Сброс"},
                     {"home.filter2.btn","Редактирование строки"},
+                    {"home.img.btn","Изображение"},
+                    {"fc.home.img","Выберите изображение"},
+                    {"imgs","Изображения"},
 
             };
 }

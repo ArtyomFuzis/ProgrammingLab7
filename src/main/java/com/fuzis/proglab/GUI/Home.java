@@ -10,11 +10,15 @@ import com.fuzis.proglab.Exception.NoRootsException;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.image.Image;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.paint.Color;
+import javafx.scene.paint.Paint;
 import javafx.scene.text.Font;
 import javafx.scene.text.TextAlignment;
 import javafx.stage.Stage;
@@ -226,9 +230,10 @@ public class Home {
         fill();
         draw_canvas();
         ClientExecutionModule.setUpdateHandle(0,this::update_table);
-
+        ClientExecutionModule.setUpdateHandle(1,(x)->draw_canvas());
+        redraw = this::draw_canvas;
     }
-
+    public static Runnable redraw;
     private void update_table(Object[] args) {
         fill();
     }
@@ -498,10 +503,10 @@ public class Home {
         }
         return text;
     }
-    HashMap<String,byte[]>  imgs = new HashMap<>();
+    //public static HashMap<String,byte[]>  imgs = new HashMap<>();
     private InputStream getImage(String name)
     {
-        if(imgs.containsKey(name))return new ByteArrayInputStream(imgs.get(name));
+        //if(imgs.containsKey(name))return new ByteArrayInputStream(imgs.get(name));
         String[] ext = new String[]{".gif",".png",".jpg",".jpeg",".bmp"};
         for(var el : ext) {
             try {
@@ -510,14 +515,14 @@ public class Home {
                     var stream = res.openStream();
                     byte[] bytes = new byte[stream.available()];
                     stream.read(bytes);
-                    imgs.put(name, bytes);
+                    //imgs.put(name, bytes);
                     return new ByteArrayInputStream(bytes);
                 }
             } catch (IOException ex) {
 
             }
         }
-        try {
+        /*try {
             if(imgs.containsKey("notfound"))return new ByteArrayInputStream(imgs.get("notfound"));
             var res = GuiApp.class.getResource("notfound.png");
             if(res != null) {
@@ -529,36 +534,61 @@ public class Home {
             }
         } catch (IOException ex) {
 
-        }
+        }*/
         return new ByteArrayInputStream(new byte[]{});
     }
 
     @FXML
     private Canvas cnvs;
-    int ins = 50;
-    int w = 215;
-    int h = 300;
-    int line_y = 40;
-    int img_y = 40;
-    int img_inset_x = 10;
-    int img_inset_y = 10;
-    int font_size = 40;
-    HashMap<String,Image> imgss = new HashMap<>();
+    public static int ins = 50;
+    public static int w = 215;
+    public static int h = 300;
+    public static int line_y = 40;
+    public static int img_y = 40;
+    public static int img_inset_x = 10;
+    public static int img_inset_y = 10;
+    public static int font_size = 40;
+    public static HashMap<String,Image> imgss = new HashMap<>();
+    private static HashMap<Integer,Color> paints = new HashMap<>();
+    private Color getColor(Integer id)
+    {
+        Random gen = new Random();
+        if(paints.containsKey(id))return paints.get(id);
+        while(true) {
+            var r = gen.nextInt(20, 255);
+            var g = gen.nextInt(20, 255);
+            var b = gen.nextInt(20, 255);
+            Color paint = Color.rgb(r, g, b);
+            boolean con = false;
+            for(var el : paints.values())
+            {
+                double sqr = Math.sqrt((paint.getRed()-el.getRed())*(paint.getRed()-el.getRed())+(paint.getGreen()-el.getGreen())*(paint.getGreen()-el.getGreen())+(paint.getBlue()-el.getBlue())*(paint.getBlue()-el.getBlue()));
+                if(sqr < 0.02)
+                {
+                    con = true;
+                    break;
+                }
+            }
+            if(con)continue;
+            paints.put(id, paint);
+            return paint;
+        }
+    }
+    List<DefaultCartoonPersonCharacter> last_col;
     private void draw_canvas( ) {
-        var col = ClientExecutionModule.request_collection_all();
-        last_col = col;
-
+        var col = ClientExecutionModule.request_collection_all().stream().toList();
         cnvs.setHeight(Math.ceil(((double)col.size())/6)*(ins+h)+ins);
         var context = cnvs.getGraphicsContext2D();
         context.clearRect(0, 0, cnvs.getWidth(), cnvs.getHeight());
         context.setStroke(Color.RED);
-        context.setFill(Color.AQUA);
+        last_col = col;
         try {
             //context.drawImage(new Image(GuiApp.class.getResource("back.jpg").openStream(),1600.0,700.0,false,true), 0, 0);
             int i = 0;
             int j = 0;
             for (var el : col)
             {
+                context.setFill(getColor(el.belongs_to));
                 context.fillRect(ins+i*(ins + w),ins+j*(ins + h),w,h);
                 context.strokeRect(ins+i*(ins + w)+1,ins+j*(ins + h)+1,w-1,h-1);
                 context.setStroke(Color.BLACK);
@@ -581,8 +611,6 @@ public class Home {
                     j++;
                 }
             }
-            last_i = i;
-            last_j = j;
         }
         catch (Exception e)
         {
@@ -634,4 +662,37 @@ public class Home {
         }
 
     }*/
+    static int l = 0;
+    @FXML
+    private void cnvs_clicked(MouseEvent event)
+    {
+        var i = ((int)Math.ceil((event.getX() - ins)/(ins + w)))-1;
+        if(ins+i*(ins + w)>event.getX() || ins+i*(ins + w)+w<event.getX())return;
+        var j = ((int)Math.ceil((event.getY() - ins)/(ins + h)))-1;
+        if(ins+j*(ins + h)>event.getY() || ins+j*(ins + h)+h<event.getY())return;
+        if(j*6+i >= last_col.size())return;
+        var charac = last_col.get(j*6+i);
+        edit_pane(charac);
+    }
+    public static volatile DefaultCartoonPersonCharacter clicked_obj;
+    private void edit_pane(DefaultCartoonPersonCharacter charac)
+    {
+        clicked_obj = charac;
+        Stage stg = new Stage();
+        stg.setResizable(false);
+        ResourceBundle bundle = ListResourceBundle.getBundle("com.fuzis.proglab.Localization.UIResources", GuiApp.locale);
+        FXMLLoader fxmlLoader = new FXMLLoader(GuiApp.class.getResource("edit.fxml"),bundle);
+        try {
+            stg.getIcons().add(new Image(GuiApp.class.getResource("icon.png").openStream()));
+            var scene = new Scene(fxmlLoader.load(), 480, 520);
+            stg.setScene(scene);
+            stg.show();
+        }
+        catch (IOException e)
+        {
+            e.printStackTrace();
+            System.out.println("IOException in edit_pane");
+            System.exit(1);
+        }
+    }
 }
