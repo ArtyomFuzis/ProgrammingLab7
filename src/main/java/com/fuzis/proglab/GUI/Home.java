@@ -228,7 +228,7 @@ public class Home {
         fld_quote.textProperty().addListener(listener_quote);
         fld_opinions.textProperty().addListener(listener_opinions);
         fill();
-        draw_canvas();
+        run_anim();
         ClientExecutionModule.setUpdateHandle(0,this::update_table);
         ClientExecutionModule.setUpdateHandle(1,(x)->draw_canvas());
         redraw = this::draw_canvas;
@@ -575,41 +575,83 @@ public class Home {
         }
     }
     List<DefaultCartoonPersonCharacter> last_col;
-    private void draw_canvas( ) {
+    private  synchronized void draw_canvas_anim() {
         var col = ClientExecutionModule.request_collection_all().stream().toList();
         cnvs.setHeight(Math.ceil(((double)col.size())/6)*(ins+h)+ins);
         var context = cnvs.getGraphicsContext2D();
-        context.clearRect(0, 0, cnvs.getWidth(), cnvs.getHeight());
-        context.setStroke(Color.RED);
+        last_col = col;
+        try {
+            Thread.sleep(100);
+            //context.drawImage(new Image(GuiApp.class.getResource("back.jpg").openStream(),1600.0,700.0,false,true), 0, 0);
+            for(double x =0; x < 1 ;x +=0.02) {
+                Thread.sleep(20);
+                context.clearRect(0, 0, cnvs.getWidth(), cnvs.getHeight());
+                context.setStroke(Color.RED);
+                int i = 0;
+                int j = 0;
+                for (var el : col) {
+                    context.setFill(getColor(el.belongs_to));
+                    context.fillRect(ins + i * (ins + w)*x, ins + j * (ins + h)*x, w, h);
+                    context.strokeRect(ins + i * (ins + w)*x + 1, ins + j * (ins + h)*x + 1, w - 1, h - 1);
+                    context.setStroke(Color.BLACK);
+                    context.strokeLine(ins + i * (ins + w)*x + 2, ins + j * (ins + h)*x + line_y, ins + i * (ins + w)*x + w - 2, ins + j * (ins + h)*x + line_y);
+                    context.setTextAlign(TextAlignment.CENTER);
+                    context.setFont(new Font("Times new Roman", font_size));
+                    context.strokeText(preText(el.getName()), ins + i * (ins + w)*x + ((double) w) / 2, ins + j * (ins + h)*x + line_y - 3);
+                    Image img;
+                    if (imgss.containsKey(el.getId())) img = imgss.get(el.getId());
+                    else {
+                        img = new Image(getImage(el.getId()), w - 2 * img_inset_x, h - img_y - 2 * img_inset_y, true, false);
+                        imgss.put(el.getId(), img);
+                    }
+                    context.drawImage(img, ins + i * (ins + w)*x + ((double) w - img.getWidth()) / 2, ins + j * (ins + h)*x + img_y + img_inset_y);
+                    i++;
+                    if (i == 6) {
+                        i = 0;
+                        j++;
+                    }
+                }
+            }
+        }
+        catch (Exception e)
+        {
+            System.out.println(e.getMessage());
+            e.printStackTrace();
+            System.exit(1);
+        }
+    }
+    private  synchronized void draw_canvas() {
+        var col = ClientExecutionModule.request_collection_all().stream().toList();
+        cnvs.setHeight(Math.ceil(((double)col.size())/6)*(ins+h)+ins);
+        var context = cnvs.getGraphicsContext2D();
         last_col = col;
         try {
             //context.drawImage(new Image(GuiApp.class.getResource("back.jpg").openStream(),1600.0,700.0,false,true), 0, 0);
-            int i = 0;
-            int j = 0;
-            for (var el : col)
-            {
-                context.setFill(getColor(el.belongs_to));
-                context.fillRect(ins+i*(ins + w),ins+j*(ins + h),w,h);
-                context.strokeRect(ins+i*(ins + w)+1,ins+j*(ins + h)+1,w-1,h-1);
-                context.setStroke(Color.BLACK);
-                context.strokeLine(ins+i*(ins + w)+2,ins+j*(ins + h)+line_y,ins+i*(ins + w)+w-2,ins+j*(ins + h)+line_y);
-                context.setTextAlign(TextAlignment.CENTER);
-                context.setFont(new Font("Times new Roman", font_size));
-                context.strokeText(preText(el.getName()),ins+i*(ins + w)+((double)w)/2,ins+j*(ins + h)+line_y-3);
-                Image img;
-                if(imgss.containsKey(el.getId()))img = imgss.get(el.getId());
-                else
-                {
-                    img = new Image(getImage(el.getId()),w-2*img_inset_x,h-img_y-2*img_inset_y,true,false);
-                    imgss.put(el.getId(),img);
-                }
-                context.drawImage(img, ins+i*(ins + w)+((double)w-img.getWidth())/2,ins+j*(ins + h)+img_y+img_inset_y);
-                i++;
-                if(i == 6)
-                {
-                    i = 0;
-                    j++;
-                }
+                context.clearRect(0, 0, cnvs.getWidth(), cnvs.getHeight());
+                context.setStroke(Color.RED);
+                int i = 0;
+                int j = 0;
+                for (var el : col) {
+                    context.setFill(getColor(el.belongs_to));
+                    context.fillRect(ins + i * (ins + w), ins + j * (ins + h), w, h);
+                    context.strokeRect(ins + i * (ins + w) + 1, ins + j * (ins + h) + 1, w - 1, h - 1);
+                    context.setStroke(Color.BLACK);
+                    context.strokeLine(ins + i * (ins + w) + 2, ins + j * (ins + h) + line_y, ins + i * (ins + w)+ w - 2, ins + j * (ins + h) + line_y);
+                    context.setTextAlign(TextAlignment.CENTER);
+                    context.setFont(new Font("Times new Roman", font_size));
+                    context.strokeText(preText(el.getName()), ins + i * (ins + w) + ((double) w) / 2, ins + j * (ins + h) + line_y - 3);
+                    Image img;
+                    if (imgss.containsKey(el.getId())) img = imgss.get(el.getId());
+                    else {
+                        img = new Image(getImage(el.getId()), w - 2 * img_inset_x, h - img_y - 2 * img_inset_y, true, false);
+                        imgss.put(el.getId(), img);
+                    }
+                    context.drawImage(img, ins + i * (ins + w) + ((double) w - img.getWidth()) / 2, ins + j * (ins + h) + img_y + img_inset_y);
+                    i++;
+                    if (i == 6) {
+                        i = 0;
+                        j++;
+                    }
             }
         }
         catch (Exception e)
@@ -694,5 +736,20 @@ public class Home {
             System.out.println("IOException in edit_pane");
             System.exit(1);
         }
+    }
+    @FXML
+    private Tab tab1;
+    @FXML
+    private void sel_change()
+    {
+        if(tab1.isSelected())run_anim();
+    }
+    Thread anim_thr;
+    private void run_anim()
+    {
+        if(anim_thr != null && anim_thr.isAlive())return;
+        anim_thr = new Thread(this::draw_canvas_anim);
+        anim_thr.setDaemon(true);
+        anim_thr.start();
     }
 }

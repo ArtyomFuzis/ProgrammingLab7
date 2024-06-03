@@ -16,6 +16,7 @@ import javafx.scene.image.Image;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -177,6 +178,11 @@ public class Edit {
         if (!sb_opinions.isEmpty())
             sb_opinions.deleteCharAt(sb_opinions.length() - 1);
         fld_opinions.setText(sb_opinions.toString());
+        if(Home.imgss.containsKey(charac.getId()) && Home.imgss.get(charac.getId()).getWidth() != 0)
+        {
+            System.out.println(charac.getId());
+            btn_img.setText(resources.getString("edit.img.del"));
+        }
     }
     private String SON(Object obj) {
         if (obj == null) return null;
@@ -253,27 +259,34 @@ public class Edit {
     }
     @FXML
     private void img_clicked() {
+
         var charac = getCharacter();
-        FileChooser fileChooser = new FileChooser();
-        fileChooser.setTitle(resources.getString("fc.home.img"));
-        //fileChooser.setInitialFileName(charac.getId()+".png");
-        String s =GuiApp.class.getResource("icon.png").getFile();
-        s = s.substring(0, s.length()-8);
-        fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter(resources.getString("imgs"),"*.jpg","*.png","*.gif","*.bmp","*.jpeg"));
-        fileChooser.setInitialDirectory(new File(s));
-        File f = fileChooser.showOpenDialog((Stage)btn_img.getScene().getWindow());
-        if(f == null) return;
-        synchronized (Home.imgss) {
-            System.out.println(f.getAbsolutePath());
-            try {
-                Home.imgss.put(charac.getId(), new Image(new FileInputStream(f), Home.w - 2 * Home.img_inset_x, Home.h - Home.img_y - 2 * Home.img_inset_y, false, true));
-            }
-            catch (IOException ex)
-            {
-                System.out.println("Can't open the file");
-            }
+        if(Home.imgss.containsKey(charac.getId()) && Home.imgss.get(charac.getId()).getWidth() != 0)
+        {
+            Home.imgss.put(charac.getId(), new Image(new ByteArrayInputStream(new byte[]{})));
+            Home.redraw.run();
+            ((Stage)btn_img.getScene().getWindow()).close();
         }
-        Home.redraw.run();
-        ((Stage)btn_img.getScene().getWindow()).close();
+        else {
+            FileChooser fileChooser = new FileChooser();
+            fileChooser.setTitle(resources.getString("fc.home.img"));
+            //fileChooser.setInitialFileName(charac.getId()+".png");
+            String s = GuiApp.class.getResource("icon.png").getFile();
+            s = s.substring(0, s.length() - 8);
+            fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter(resources.getString("imgs"), "*.jpg", "*.png", "*.gif", "*.bmp", "*.jpeg"));
+            fileChooser.setInitialDirectory(new File(s));
+            File f = fileChooser.showOpenDialog((Stage) btn_img.getScene().getWindow());
+            if (f == null) return;
+            synchronized (Home.imgss) {
+                System.out.println(f.getAbsolutePath());
+                try {
+                    Home.imgss.put(charac.getId(), new Image(new FileInputStream(f), Home.w - 2 * Home.img_inset_x, Home.h - Home.img_y - 2 * Home.img_inset_y, false, true));
+                } catch (IOException ex) {
+                    System.out.println("Can't open the file");
+                }
+            }
+            Home.redraw.run();
+            ((Stage) btn_img.getScene().getWindow()).close();
+        }
     }
 }

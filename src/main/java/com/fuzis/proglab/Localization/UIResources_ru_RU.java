@@ -42,6 +42,7 @@ public class UIResources_ru_RU extends ListResourceBundle {
                     {"home.img.btn","Изображение"},
                     {"fc.home.img","Выберите изображение"},
                     {"imgs","Изображения"},
+                    {"edit.img.del","Удалить изображение"},
 
             };
 }

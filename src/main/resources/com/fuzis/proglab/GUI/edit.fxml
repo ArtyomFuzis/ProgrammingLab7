@@ -278,7 +278,7 @@
                      <Insets top="5.0" />
                  </VBox.margin>
              </HBox>
-             <ButtonBar buttonMinWidth="120.0" maxWidth="1.7976931348623157E308" prefHeight="30.0">
+             <ButtonBar buttonMinWidth="138.0" maxWidth="1.7976931348623157E308" prefHeight="30.0">
                  <buttons>
                      <Button fx:id="btn_update" onMouseClicked="#update_clicked" mnemonicParsing="false"  prefHeight="30.0" text="%home.update.btn">
                      <cursor>
@@ -297,7 +297,7 @@
                  </Button>
                  </buttons>
                  <VBox.margin>
-                     <Insets right="40.0" top="20.0"/>
+                     <Insets right="50.0" top="20.0"/>
                  </VBox.margin>
              </ButtonBar>
          </children>
