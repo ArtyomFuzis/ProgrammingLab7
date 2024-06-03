@@ -344,6 +344,7 @@ public class Home {
     private Double DON(String s) {
         if (s == null || s.isEmpty()) return null;
         return Double.parseDouble(s.trim());
+
     }
 
     private Integer ION(String s) {

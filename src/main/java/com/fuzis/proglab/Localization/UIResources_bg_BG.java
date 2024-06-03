@@ -42,6 +42,10 @@ public class UIResources_bg_BG extends ListResourceBundle {
                     {"NO","Не"},
                     {"home.clfld.btn","Нулиране"},
                     {"home.filter2.btn","Редактиране на линия"},
+                    {"home.img.btn","Изображение"},
+                    {"fc.home.img","Изберете изображение"},
+                    {"imgs","Изображения"},
+                    {"edit.img.del","Изтриване на изображение"},
 
             };
 }
